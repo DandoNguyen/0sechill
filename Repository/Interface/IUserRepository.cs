@@ -2,7 +2,7 @@
 
 namespace _0sechill.Repository.Interface
 {
-    public interface IUserRepository : IRepository<Users>
+    public interface IUserRepository : IRepository<ApplicationUser>
     {
     }
 }

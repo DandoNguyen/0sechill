@@ -19,7 +19,7 @@ namespace _0sechill.Controllers
         [HttpGet]
         public IActionResult GetAllUsers()
         {
-            var userList = repo.User.FindAll();
+            var userList = repo.ApplicationUser.FindAll();
             if (userList.Count().Equals(0))
             {
                 return NoContent();

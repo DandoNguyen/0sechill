@@ -4,7 +4,7 @@ namespace _0sechill.Repository
 {
     public interface IRepoWrapper
     {
-        IUserRepository User { get; }
+        IUserRepository ApplicationUser { get; }
         Task Save();
     }
 }

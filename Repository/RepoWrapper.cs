@@ -13,7 +13,7 @@ namespace _0sechill.Repository
         {
             this.context = context;
         }
-        public IUserRepository User
+        public IUserRepository ApplicationUser
         {
             get
             {

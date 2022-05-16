@@ -1,14 +1,15 @@
 ﻿using _0sechill.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace _0sechill.Data
 {
-    public class ApiDbContext : DbContext
+    public class ApiDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options)
         {
         }
 
-        public DbSet<Users> Users { get; set; }
+        public DbSet<ApplicationUser> ApplicationUser { get; set; }
     }
 }
