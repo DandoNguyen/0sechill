@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace _0sechill.Models.Dto.UserDto.Request
+namespace _0sechill.Dto.UserDto.Request
 {
-    public class RegistrationDto
+    public class LoginDto
     {
         [Required]
         public string email { get; set; }
-        [Required]
-        public string UserName { get; set; }
         [Required]
         public string password { get; set; }
     }
