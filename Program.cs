@@ -1,6 +1,5 @@
 using _0sechill.Data;
 using _0sechill.Models;
-using _0sechill.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,11 +41,11 @@ builder.Services.AddAuthentication(options =>
 
 //For DI
 builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddScoped<IRepoWrapper, RepoWrapper>();
 
 builder.Services.AddControllers();
 // For entity framword
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SqLiteConnection")));
+builder.Services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<ApiDbContext>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

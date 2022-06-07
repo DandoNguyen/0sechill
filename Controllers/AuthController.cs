@@ -60,6 +60,10 @@ namespace _0sechill.Controllers
 
                 var token = GetToken(authClaim);
 
+                ////Get Refresh Token
+                //var refreshToken = GetRefreshToken();
+                //SetRefreshToken(refreshToken);
+
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
@@ -70,6 +74,11 @@ namespace _0sechill.Controllers
 
             return Unauthorized();
         }
+
+        //private async Task<RefreshToken> GetRefreshToken()
+        //{
+
+        //}
 
         [HttpPost]
         [Route("Register")]

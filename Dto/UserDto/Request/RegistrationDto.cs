@@ -5,7 +5,10 @@ namespace _0sechill.Models.Dto.UserDto.Request
     public class RegistrationDto
     {
         [Required]
+        [EmailAddress]
         public string email { get; set; }
+        [Required]
+        public string citizenId { get; set; }
         [Required]
         public string UserName { get; set; }
         [Required]

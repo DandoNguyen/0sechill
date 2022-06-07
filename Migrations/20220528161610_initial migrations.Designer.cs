@@ -11,13 +11,41 @@ using _0sechill.Data;
 namespace _0sechill.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20220516190053_Initial")]
-    partial class Initial
+    [Migration("20220528161610_initial migrations")]
+    partial class initialmigrations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
+
+            modelBuilder.Entity("_0sechill.Models.Apartment", b =>
+                {
+                    b.Property<Guid>("apartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("bedroomAmount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("blockId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("clearanceArea")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("heartWallArea")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ísFurnitureAvailable")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("apartmentId");
+
+                    b.HasIndex("blockId");
+
+                    b.ToTable("apartments");
+                });
 
             modelBuilder.Entity("_0sechill.Models.ApplicationUser", b =>
                 {
@@ -67,17 +95,20 @@ namespace _0sechill.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Token")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TokenCreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TokenExpireDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("age")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("citizenId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("firstName")
@@ -105,6 +136,127 @@ namespace _0sechill.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Block", b =>
+                {
+                    b.Property<Guid>("blockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("blockName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("flourAmount")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("blockId");
+
+                    b.ToTable("blocks");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.RentalHistory", b =>
+                {
+                    b.Property<Guid>("rentalHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("apartmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("applicationUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("createdDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("endDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("lastSignedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("modifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("startDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("userId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("rentalHistoryId");
+
+                    b.HasIndex("apartmentId");
+
+                    b.HasIndex("applicationUserId");
+
+                    b.ToTable("rentalHistories");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.SocialRecognization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("number")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("type")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("socialRecognizations");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.UserHistory", b =>
+                {
+                    b.Property<Guid>("userHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("apartmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("applicationUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("createdDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("endDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("lastSignedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("modifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("startDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("userId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("userHistoryId");
+
+                    b.HasIndex("apartmentId");
+
+                    b.HasIndex("applicationUserId");
+
+                    b.ToTable("userHistories");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -182,9 +334,11 @@ namespace _0sechill.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
@@ -222,9 +376,11 @@ namespace _0sechill.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -233,6 +389,51 @@ namespace _0sechill.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Apartment", b =>
+                {
+                    b.HasOne("_0sechill.Models.Block", "block")
+                        .WithMany("apartments")
+                        .HasForeignKey("blockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("block");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.RentalHistory", b =>
+                {
+                    b.HasOne("_0sechill.Models.Apartment", "apartment")
+                        .WithMany()
+                        .HasForeignKey("apartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("_0sechill.Models.ApplicationUser", "applicationUser")
+                        .WithMany()
+                        .HasForeignKey("applicationUserId");
+
+                    b.Navigation("apartment");
+
+                    b.Navigation("applicationUser");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.UserHistory", b =>
+                {
+                    b.HasOne("_0sechill.Models.Apartment", "apartment")
+                        .WithMany("userHistories")
+                        .HasForeignKey("apartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("_0sechill.Models.ApplicationUser", "applicationUser")
+                        .WithMany("userHistories")
+                        .HasForeignKey("applicationUserId");
+
+                    b.Navigation("apartment");
+
+                    b.Navigation("applicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -284,6 +485,21 @@ namespace _0sechill.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Apartment", b =>
+                {
+                    b.Navigation("userHistories");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("userHistories");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Block", b =>
+                {
+                    b.Navigation("apartments");
                 });
 #pragma warning restore 612, 618
         }
