@@ -1,5 +1,7 @@
 using _0sechill.Data;
 using _0sechill.Models;
+using _0sechill.Services;
+using _0sechill.Services.Class;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +43,7 @@ builder.Services.AddAuthentication(options =>
 
 //For DI
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<IExcelService, ExcelService>();
 
 builder.Services.AddControllers();
 // For entity framword

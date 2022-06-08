@@ -1,7 +1,11 @@
-﻿namespace _0sechill.Services
+﻿using _0sechill.Models;
+using OfficeOpenXml;
+
+namespace _0sechill.Services
 {
     public interface IExcelService
     {
-        string ReadExcelFile(string filePath);
+        Task<List<Block>> ImportBlock(IFormFile formFile);
+        Task<List<Apartment>> ReadApartmentInBlock(IFormFile formFile, string blockName);
     }
 }

@@ -6,9 +6,9 @@ namespace _0sechill.Models
     {
         [Key]
         public Guid apartmentId { get; set; }
+        public string apartmentName { get; set; }
         public int heartWallArea { get; set; }
         public int clearanceArea { get; set; }
-        public bool ísFurnitureAvailable { get; set; }
         public int bedroomAmount { get; set; }
 
         //FK
