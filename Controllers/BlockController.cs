@@ -1,7 +1,10 @@
 ﻿using _0sechill.Data;
+using _0sechill.Models;
 using _0sechill.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace _0sechill.Controllers
 {
@@ -12,15 +15,18 @@ namespace _0sechill.Controllers
         private readonly IExcelService excelService;
         private readonly ILogger<BlockController> logger;
         private readonly ApiDbContext context;
+        private readonly IMapper mapper;
 
         public BlockController(
             IExcelService excelService,
             ILogger<BlockController> logger,
-            ApiDbContext context)
+            ApiDbContext context,
+            IMapper mapper)
         {
             this.excelService = excelService;
             this.logger = logger;
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpPost]
@@ -56,11 +62,21 @@ namespace _0sechill.Controllers
                     try
                     {
                         block.blockId = Guid.NewGuid();
-                        context.blocks.Add(block);
-                        foreach (var apartment in listApartment)
+
+                        //Update or add new block and apartment
+                        var existingBlock = await context.blocks
+                            .Where(x => x.blockName.Equals(block.blockName))
+                            .FirstOrDefaultAsync();
+                        if (existingBlock is null)
                         {
-                            apartment.blockId = block.blockId;
-                            context.apartments.Add(apartment);
+                            context.blocks.Add(block);
+                            await AddApartmentAsync(listApartment, block.blockId);
+                        }
+                        else
+                        {
+                            existingBlock.flourAmount = block.flourAmount;
+                            context.blocks.Update(existingBlock);
+                            await AddApartmentAsync(listApartment, existingBlock.blockId);
                         }
                         await context.SaveChangesAsync();
                     }
@@ -81,6 +97,23 @@ namespace _0sechill.Controllers
             {
                 logger.LogError(ex.Message);
                 return BadRequest(ex.Message);
+            }
+        }
+
+        private async Task AddApartmentAsync(List<Apartment> listApartment, Guid blockId)
+        {
+            var listExistingApartment = await context.apartments
+                .Where(x => x.blockId.Equals(blockId))
+                .ToListAsync();
+            if (listExistingApartment.Count != 0)
+            {
+                context.apartments.RemoveRange(listApartment);
+            }
+            foreach (var apartment in listApartment)
+            {
+                apartment.blockId = blockId;
+                context.apartments.Add(apartment);
+                await context.SaveChangesAsync();
             }
         }
     }
