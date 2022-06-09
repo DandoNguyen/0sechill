@@ -33,14 +33,14 @@ namespace _0sechill.Services.Class
                     {
                         if (worksheet.Name.ToLower().Trim().Equals(blockName.ToLower().Trim()))
                         {
-                            var cellAddress = GetCellAddress(package, worksheet.Name, "Floor/Room");
-                            for (int row = cellAddress.Start.Row + 1; row <= worksheet.Dimension.End.Row; row++)
+                            var entryCell = GetCellAddress(package, worksheet.Name, "Floor/Room");
+                            for (int row = entryCell.Start.Row + 1; row <= worksheet.Dimension.End.Row; row++)
                             {
-                                for (int col = cellAddress.Start.Column + 1; col <= worksheet.Dimension.End.Column; col++)
+                                for (int col = entryCell.Start.Column + 1; col <= worksheet.Dimension.End.Column; col++)
                                 {
                                     var apartment = new Apartment();
-                                    var rowValue = int.TryParse(worksheet.Cells[row, cellAddress.Start.Column].Value.ToString(), out int floorNumber);
-                                    var colValue = int.TryParse(worksheet.Cells[cellAddress.Start.Row, col].Value.ToString(), out int apartmentNumber);
+                                    var rowValue = int.TryParse(worksheet.Cells[row, entryCell.Start.Column].Value.ToString(), out int floorNumber);
+                                    var colValue = int.TryParse(worksheet.Cells[entryCell.Start.Row, col].Value.ToString(), out int apartmentNumber);
                                     if (rowValue && colValue)
                                     {
                                         apartment.apartmentName = $"{worksheet.Name[0].ToString().ToUpper()}.{floorNumber:00}{apartmentNumber:00}";

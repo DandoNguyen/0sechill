@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace _0sechill.Controllers
 {
@@ -33,7 +34,7 @@ namespace _0sechill.Controllers
         [Route("ImportExcel")]
         public async Task<IActionResult> ImportExcelAsync(IFormFile formFile)
         {
-            if(formFile is null)
+            if (formFile is null)
             {
                 return BadRequest("formFile is null");
             }
@@ -95,7 +96,7 @@ namespace _0sechill.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogInformation(ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -107,14 +108,57 @@ namespace _0sechill.Controllers
                 .ToListAsync();
             if (listExistingApartment.Count != 0)
             {
-                context.apartments.RemoveRange(listApartment);
+                switch (listApartment.Count <= listExistingApartment.Count)
+                {
+                    case true:
+                        for (int i = 0; i < listExistingApartment.Count; i++)
+                        {
+                            for (int j = 0; j < listApartment.Count; j++)
+                            {
+                                //If existingApartment has the same name as one object in listApartment
+                                if (listExistingApartment[i].apartmentName.Equals(listApartment[j].apartmentName))
+                                {
+                                    //Update each existingApartment when condition met
+                                    mapper.Map(listApartment[j], listExistingApartment[i]);
+                                    context.apartments.Update(listExistingApartment[i]);
+                                }
+                                else //For each object doesnt met condition
+                                {
+                                    context.apartments.Remove(listExistingApartment[i]);
+                                }
+                            }
+                        }
+                        break;
+
+                    case false:
+                        for (int j = 0; j < listApartment.Count; j++)
+                        {
+                            for (int i = 0; i < listExistingApartment.Count; i++)
+                            {
+                                if (listApartment[j].apartmentName.Equals(listExistingApartment[i].apartmentName))
+                                {
+                                    mapper.Map(listApartment[j], listExistingApartment[i]);
+                                    context.apartments.Update(listExistingApartment[i]);
+                                }
+                                else
+                                {
+                                    listApartment[j].blockId = blockId;
+                                    context.apartments.Add(listApartment[j]);
+                                }
+                            }
+                        }
+                        break;
+                }                
             }
-            foreach (var apartment in listApartment)
+            else
             {
-                apartment.blockId = blockId;
-                context.apartments.Add(apartment);
-                await context.SaveChangesAsync();
+                foreach (var apartment in listApartment)
+                {
+                    apartment.blockId = blockId;
+                    context.apartments.Add(apartment);
+                }
             }
+            await context.SaveChangesAsync();
         }
     }
 }
