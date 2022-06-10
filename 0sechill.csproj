@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Folder Include="Dto\Apartment\Response\" />
-    <Folder Include="Dto\Block\Response\" />
   </ItemGroup>
 
   <ItemGroup>
