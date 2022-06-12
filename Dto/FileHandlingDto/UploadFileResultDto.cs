@@ -2,7 +2,7 @@
 {
     public class UploadFileResultDto
     {
-        public bool result { get; set; }
+        public bool isSucceeded { get; set; }
         public string message { get; set; }
     }
 }

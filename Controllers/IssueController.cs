@@ -2,6 +2,7 @@
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Models.IssueManagement;
+using _0sechill.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -18,15 +19,21 @@ namespace _0sechill.Controllers
     public class IssueController : ControllerBase
     {
         private readonly ApiDbContext context;
+        private readonly ITokenService tokenService;
+        private readonly IFileHandlingService fileService;
         private readonly IMapper mapper;
         private readonly ILogger<IssueController> logger;
 
         public IssueController(
             ApiDbContext context,
+            ITokenService tokenService,
+            IFileHandlingService fileService,
             IMapper mapper,
             ILogger<IssueController> logger)
         {
             this.context = context;
+            this.tokenService = tokenService;
+            this.fileService = fileService;
             this.mapper = mapper;
             this.logger = logger;
         }
@@ -55,15 +62,46 @@ namespace _0sechill.Controllers
         }
 
         [HttpPost, Route("CreateIssue")]
-        public async Task<IActionResult> CreateIssueAsync([FromForm] CreateIssueDto dto, [FromHeader] string Authorization)
+        public async Task<IActionResult> CreateIssueAsync([FromForm] CreateIssueDto dto, List<IFormFile> listFiles, [FromHeader] string Authorization)
         {
             if (ModelState.IsValid)
             {
+                var listFileError = new List<string>();
                 //Decode Token for Author
+                var author = await tokenService.DecodeToken(Authorization);
+                if (author is null)
+                {
+                    return BadRequest("Authorization Is Invalid!");
+                }
 
                 var newIssue = mapper.Map<Issues>(dto);
+                newIssue.authorId = author.Id;
                 await context.issues.AddAsync(newIssue);
                 await context.SaveChangesAsync();
+
+                if (!listFiles.Count.Equals(0))
+                {
+                    foreach (var formFile in listFiles)
+                    {
+                        var fileResult = await fileService.UploadFile(formFile, newIssue.ID.ToString(), author.UserName);
+                        if (!fileResult.isSucceeded)
+                        {
+                            listFileError.Add(formFile.Name);
+                        }
+                    }
+                }
+
+                if (!listFileError.Count.Equals(0))
+                {
+                    return new JsonResult(new
+                    {
+                        message = "Issue created but some files cannot be uploaded: ",
+                        listFileError
+                    })
+                    {
+                        StatusCode = 200
+                    };
+                }
                 return Ok("Issue Created");
             }
             return BadRequest("Error");
@@ -82,6 +120,7 @@ namespace _0sechill.Controllers
                 return BadRequest("No Issue found");
 
             mapper.Map(dto, existIssue);
+            existIssue.lastModifiedDate = DateOnly.FromDateTime(DateTime.UtcNow);
             try
             {
                 context.issues.Update(existIssue);

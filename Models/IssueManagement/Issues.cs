@@ -20,11 +20,11 @@ namespace _0sechill.Models.IssueManagement
         [Required]
         public Guid cateId { get; set; }
         public Category category { get; set; }
-        public Guid authorId { get; set; }
+        public string authorId { get; set; }
         public ApplicationUser author { get; set; }
 
         //Collection offset
-        public ICollection<File> files { get; set; }
+        public ICollection<FilePath> files { get; set; }
 
         //On new Object event
         public Issues()

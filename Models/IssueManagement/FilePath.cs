@@ -1,6 +1,6 @@
 ﻿namespace _0sechill.Models.IssueManagement
 {
-    public class File
+    public class FilePath
     {
         public Guid ID { get; set; }
         public string filePath { get; set; }

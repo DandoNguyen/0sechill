@@ -4,6 +4,6 @@ namespace _0sechill.Services
 {
     public interface IFileHandlingService
     {
-        UploadFileResultDto UploadFile(IFormFile formFile);
+        Task<UploadFileResultDto> UploadFile(IFormFile formFile, string issueId, string author);
     }
 }

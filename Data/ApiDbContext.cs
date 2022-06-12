@@ -21,7 +21,7 @@ namespace _0sechill.Data
         public DbSet<RentalHistory> rentalHistories { get; set; }
         public DbSet<SocialRecognization> socialRecognizations { get; set; }
         public DbSet<Issues> issues { get; set; }
-        public DbSet<Models.IssueManagement.File> files { get; set; }
+        public DbSet<Models.IssueManagement.FilePath> filePaths { get; set; }
         public DbSet<Category> categories { get; set; }
     }
 }
