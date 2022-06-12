@@ -8,7 +8,7 @@ namespace _0sechill.AutoMapperProfiles
     {
         public ApartmentProfile()
         {
-            CreateMap<AddApartmentDto, Apartment>();
+            CreateMap<EditApartmentDto, Apartment>();
             CreateMap<Apartment, Apartment>()
                 .ForMember(x => x.blockId, opt => opt.Ignore())
                 .ForMember(x => x.apartmentId, opt => opt.Ignore());

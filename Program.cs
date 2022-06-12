@@ -13,10 +13,16 @@ ConfigurationManager configuration = builder.Configuration;
 
 // Add services to the container.
 
+// For entity framword
+builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SqLiteConnection")));
 // For Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApiDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedEmail = true;
+})
+.AddEntityFrameworkStores<ApiDbContext>()
+.AddDefaultTokenProviders();
 
 // For Jwt
 builder.Services.AddAuthentication(options =>
@@ -26,29 +32,31 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 
-// Adding Jwt Bearer
+// Adding Jwt Bearer    
 .AddJwtBearer(options =>
 {
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+        ValidAudience = builder.Configuration["JWT:ValidAudience"],
         ValidateAudience = true,
-        ValidAudience = configuration["JWT:ValidAudience"],
-        ValidIssuer = configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+        ValidateLifetime = false, //In development this should be true
+        ValidateIssuerSigningKey = true
     };
 });
+
+//Enable authentication and authorization
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 //For DI
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IExcelService, ExcelService>();
 
 builder.Services.AddControllers();
-// For entity framword
-builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SqLiteConnection")));
-builder.Services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<ApiDbContext>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -64,6 +72,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

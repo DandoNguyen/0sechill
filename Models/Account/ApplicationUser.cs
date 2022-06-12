@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using _0sechill.Models.IssueManagement;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Models
@@ -18,7 +19,8 @@ namespace _0sechill.Models
         public DateTime TokenCreatedDate { get; set; }
         public DateTime TokenExpireDate { get; set; }
 
-        //FK
+        //Collection offset
         public ICollection<UserHistory> userHistories { get; set; }
+        public ICollection<Issues> issues { get; set; } 
     }
 }
