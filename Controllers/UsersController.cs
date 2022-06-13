@@ -2,6 +2,7 @@
 using _0sechill.Dto.UserDto.Request;
 using _0sechill.Dto.UserDto.Response;
 using _0sechill.Models;
+using _0sechill.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,13 +16,22 @@ namespace _0sechill.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly IFileHandlingService fileService;
+        private readonly IConfiguration config;
+        private readonly ApiDbContext context;
         private readonly IMapper mapper;
 
         public UsersController(
             UserManager<ApplicationUser> userManager,
+            IFileHandlingService fileService,
+            IConfiguration config,
+            ApiDbContext context,
             IMapper mapper)
         {
             this.userManager = userManager;
+            this.fileService = fileService;
+            this.config = config;
+            this.context = context;
             this.mapper = mapper;
         }
 
@@ -50,7 +60,7 @@ namespace _0sechill.Controllers
 
         [HttpPut]
         [Route("UpdateUser")]
-        public async Task<IActionResult> UpdateUser(UpdateUserDto dto)
+        public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDto dto, IFormFile avatar)
         {
             var user = await userManager.FindByIdAsync(dto.userId);
             if (user is null)
@@ -60,6 +70,21 @@ namespace _0sechill.Controllers
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
                 return BadRequest($"Error updating User {user.UserName}: {result.Errors}");
+
+            if (avatar is not null)
+            {
+                var uploadFileResult = await fileService.UploadFile(avatar, user.Id, config["FilePaths:Avatar"]);
+                if (!uploadFileResult.isSucceeded)
+                {
+                    await context.SaveChangesAsync();
+                    return new JsonResult($"Update User {user.UserName} success but couldn't upload avatar: {avatar.Name}")
+                    {
+                        StatusCode = 200
+                    };
+                }
+            }
+
+            await context.SaveChangesAsync();
             return Ok($"User {user.UserName} updated!");
         }
     }

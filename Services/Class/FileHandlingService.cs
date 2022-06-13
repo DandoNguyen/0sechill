@@ -2,6 +2,7 @@
 using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Models.IssueManagement;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Services.Class
 {
@@ -20,9 +21,10 @@ namespace _0sechill.Services.Class
             this.context = context;
             this.logger = logger;
         }
-        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string issueId, string author)
+
+        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, string rootPath)
         {
-            var rootFilePath = config["FilePaths:IssueFiles"];
+            var rootFilePath = "~" + rootPath.Trim();
             if (rootFilePath is null)
                 return new UploadFileResultDto()
                 {
@@ -50,7 +52,9 @@ namespace _0sechill.Services.Class
 
             if (formFile.Length > 0)
             {
-                var newRootPath = Path.Combine(rootFilePath, author, issueId);
+                var newRootPath = Path.Combine(rootFilePath, ownerId);
+
+
                 if (!Directory.Exists(newRootPath))
                 {
                     Directory.CreateDirectory(newRootPath);
@@ -79,7 +83,15 @@ namespace _0sechill.Services.Class
 
                 //Create new File model Object
                 var newFile = new FilePath();
-                newFile.issueId = Guid.Parse(issueId);
+                switch (rootFilePath)
+                {
+                    case "App_Data\\FilePaths":
+                        newFile.issueId = Guid.Parse(ownerId);
+                        break;
+                    case "App_Data\\Avatar":
+                        newFile.userId = ownerId;
+                        break;
+                }
                 newFile.filePath = finalPath;
 
                 try
@@ -118,6 +130,17 @@ namespace _0sechill.Services.Class
             {
                 case ".doc": case ".docx": return true;
                 case ".xls": case ".xlsx": return true;
+                case ".jpg": case ".png": case ".jpeg": return true;
+                default: return false;
+            }
+        }
+
+        //check for image only
+        private static bool IsValidAvatar(IFormFile file)
+        {
+            string fileExtenstion = Path.GetExtension(file.FileName).ToLower();
+            switch (fileExtenstion)
+            {
                 case ".jpg": case ".png": case ".jpeg": return true;
                 default: return false;
             }

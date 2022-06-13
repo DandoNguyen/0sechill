@@ -21,6 +21,7 @@ namespace _0sechill.Controllers
         private readonly ApiDbContext context;
         private readonly ITokenService tokenService;
         private readonly IFileHandlingService fileService;
+        private readonly IConfiguration config;
         private readonly IMapper mapper;
         private readonly ILogger<IssueController> logger;
 
@@ -28,12 +29,14 @@ namespace _0sechill.Controllers
             ApiDbContext context,
             ITokenService tokenService,
             IFileHandlingService fileService,
+            IConfiguration config,
             IMapper mapper,
             ILogger<IssueController> logger)
         {
             this.context = context;
             this.tokenService = tokenService;
             this.fileService = fileService;
+            this.config = config;
             this.mapper = mapper;
             this.logger = logger;
         }
@@ -83,7 +86,7 @@ namespace _0sechill.Controllers
                 {
                     foreach (var formFile in listFiles)
                     {
-                        var fileResult = await fileService.UploadFile(formFile, newIssue.ID.ToString(), author.UserName);
+                        var fileResult = await fileService.UploadFile(formFile, newIssue.ID.ToString(), config["FilePaths:IssueFiles"]);
                         if (!fileResult.isSucceeded)
                         {
                             listFileError.Add(formFile.Name);
@@ -93,14 +96,11 @@ namespace _0sechill.Controllers
 
                 if (!listFileError.Count.Equals(0))
                 {
-                    return new JsonResult(new
+                    return new JsonResult(new 
                     {
-                        message = "Issue created but some files cannot be uploaded: ",
-                        listFileError
-                    })
-                    {
-                        StatusCode = 200
-                    };
+                        message = "Issue created but some files cannot be uploaded: ", 
+                        listFileError 
+                    }) { StatusCode = 200 };
                 }
                 return Ok("Issue Created");
             }

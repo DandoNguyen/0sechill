@@ -4,9 +4,9 @@
     {
         public Guid ID { get; set; }
         public string filePath { get; set; }
-
-        //FK
-        public Guid issueId { get; set; }
-        public Issues issue { get; set; }
+        public Guid issueId { get; set; } //issue id as owner, user id as owner
+        public Issues issues { get; set; }
+        public string userId { get; set; }
+        public ApplicationUser users { get; set; }
     }
 }
