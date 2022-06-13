@@ -14,7 +14,7 @@ namespace _0sechill.Models.IssueManagement
         public DateOnly createdDate { get; set; }
         public DateOnly lastModifiedDate { get; set; }
         [Required]
-        public bool privacy { get; set; }
+        public bool isPrivate { get; set; }
 
         //FK
         [Required]

@@ -51,7 +51,10 @@ namespace _0sechill.Controllers
         [HttpGet, Route("GetAllIssue")]
         public async Task<IActionResult> GetAllIssueAsync()
         {
-            var listExistIssue = await context.issues.ToListAsync();
+            var listExistIssue = await context.issues
+                .Include(x => x.author)
+                .Include(x => x.category)
+                .ToListAsync();
             if (listExistIssue.Count.Equals(0))
                 return NoContent();
 
@@ -59,6 +62,8 @@ namespace _0sechill.Controllers
             foreach (var issue in listExistIssue)
             {
                 var issueDto = mapper.Map<IssueDto>(issue);
+                issueDto.cateName = issue.category.cateName;
+                issueDto.authorName = $"{issue.author.firstName} {issue.author.lastName}";
                 listIssueDto.Add(issueDto);
             }
             return Ok(listIssueDto);
@@ -79,6 +84,7 @@ namespace _0sechill.Controllers
 
                 var newIssue = mapper.Map<Issues>(dto);
                 newIssue.authorId = author.Id;
+                newIssue.cateId = Guid.Parse(dto.cateId);
                 await context.issues.AddAsync(newIssue);
                 await context.SaveChangesAsync();
 
