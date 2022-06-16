@@ -25,6 +25,7 @@ namespace _0sechill.Models.IssueManagement
 
         //Collection offset
         public ICollection<FilePath> files { get; set; }
+        public ICollection<Comments> comments { get; set; }
 
         //On new Object event
         public Issues()

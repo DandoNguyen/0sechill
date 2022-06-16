@@ -15,6 +15,7 @@ namespace _0sechill.Data
             base.OnModelCreating(builder);
         }
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
+        public DbSet<Comments> comments { get; set; }
         public DbSet<Apartment> apartments { get; set; }
         public DbSet<Block> blocks { get; set; }
         public DbSet<UserHistory> userHistories { get; set; }

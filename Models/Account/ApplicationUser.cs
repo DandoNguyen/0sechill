@@ -21,6 +21,7 @@ namespace _0sechill.Models
 
         //Collection offset
         public ICollection<UserHistory> userHistories { get; set; }
-        public ICollection<Issues> issues { get; set; } 
+        public ICollection<Issues> issues { get; set; }
+        public ICollection<Comments> comments { get; set; }
     }
 }
