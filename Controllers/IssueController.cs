@@ -15,7 +15,6 @@ namespace _0sechill.Controllers
     [Route("api/[controller]")]
     [ApiController]
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [Authorize]
     public class IssueController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -56,7 +55,7 @@ namespace _0sechill.Controllers
                 .Include(x => x.category)
                 .ToListAsync();
             if (listExistIssue.Count.Equals(0))
-                return NoContent();
+                return BadRequest("No Issues available!");
 
             var listIssueDto = new List<IssueDto>();
             foreach (var issue in listExistIssue)

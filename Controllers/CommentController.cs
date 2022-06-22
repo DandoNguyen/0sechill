@@ -110,14 +110,14 @@ namespace _0sechill.Controllers
         }
 
         [HttpPut, Route("EditComment")]
-        public async Task<IActionResult> EditCommnetAsync([FromBody] string commentId,[FromBody] string newContent)
+        public async Task<IActionResult> EditCommnetAsync([FromBody] EditCommentDto dto)
         {
-            var existComment = await context.comments.FindAsync(commentId);
+            var existComment = await context.comments.FindAsync(dto.commentId);
             if (existComment is null)
             {
                 return BadRequest("Comment not Found");
             }
-            existComment.content = newContent;
+            existComment.content = dto.newContent;
             context.comments.Update(existComment);
             await context.SaveChangesAsync();
             return Ok("Comment Edited");

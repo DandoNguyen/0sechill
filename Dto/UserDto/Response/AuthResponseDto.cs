@@ -5,11 +5,11 @@
         public AuthResponseDto()
         {
             success = false;
-            message = "null";
+            message = new List<string>();
             token = "null";
         }
         public bool success { get; set; }
-        public string message { get; set; }
+        public List<string> message { get; set; }
         public string token { get; set; }
     }
 }

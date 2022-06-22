@@ -54,6 +54,8 @@ builder.Services.AddAuthorization();
 //For DI
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IExcelService, ExcelService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IFileHandlingService, FileHandlingService>();
 
 builder.Services.AddControllers();
 

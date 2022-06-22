@@ -1,4 +1,5 @@
 ﻿using _0sechill.Data;
+using _0sechill.Dto.Cate.Request;
 using _0sechill.Dto.Cate.Response;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Models.IssueManagement;
@@ -98,20 +99,20 @@ namespace _0sechill.Controllers
         }
 
         [HttpPut, Route("EditCategory")]
-        public async Task<IActionResult> EditCateAsync([FromBody] string cateId, [FromBody] string cateName)
+        public async Task<IActionResult> EditCateAsync([FromBody] EditCateDto dto)
         {
-            var existCate = await context.categories.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(cateId)));
+            var existCate = await context.categories.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(dto.cateId)));
             if (existCate is null)
             {
                 return BadRequest($"No Cate found");
             }
             
-            existCate.cateName = cateName;
+            existCate.cateName = dto.cateName;
             try
             {
                 context.categories.Update(existCate);
                 await context.SaveChangesAsync();
-                return Ok($"Cate {cateName} has been updated");
+                return Ok($"Cate {dto.cateName} has been updated");
             }
             catch (Exception ex)
             {

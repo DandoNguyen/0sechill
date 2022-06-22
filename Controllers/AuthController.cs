@@ -48,30 +48,39 @@ namespace _0sechill.Controllers
                     return BadRequest(new AuthResponseDto()
                     {
                         success = false,
-                        message = $"Email {dto.email} has been registered!"
+                        message =
+                        {
+                            $"Email {dto.email} has been registered!"
+                        }
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
 
-                var isCreated = await userManager.CreateAsync(newUser);
+                var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
                 if (isCreated.Succeeded)
                     return Ok(new AuthResponseDto()
                     {
                         success = true,
-                        message = $"User {dto.UserName} registered Successfully!"
+                        message =
+                        {
+                            $"User {dto.UserName} registered Successfully!"
+                        }
                     });
                 else
                     return new JsonResult(new AuthResponseDto()
                     {
                         success = false,
-                        message = isCreated.Errors.Select(x => x.Description).ToString()
+                        message = isCreated.Errors.Select(x => x.Description).ToList()
                     }) { StatusCode = 500 };
             }
             return BadRequest(new AuthResponseDto()
             {
                 success = false,
-                message = "Invald Payload!"
+                message =
+                {
+                    "Invald Payload!"
+                }
             });
         }
 
@@ -87,7 +96,10 @@ namespace _0sechill.Controllers
                 return BadRequest(new AuthResponseDto()
                 {
                     success = false,
-                    message = "Email is not exist!"
+                    message =
+                    {
+                        "Email is not exist!"
+                    }
                 });
             }
 
@@ -98,7 +110,10 @@ namespace _0sechill.Controllers
                 return BadRequest(new AuthResponseDto()
                 {
                     success = false,
-                    message = "Password is not correct!"
+                    message =
+                    {
+                        "Password is not correct!"
+                    }
                 });
             }
 
