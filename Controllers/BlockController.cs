@@ -1,12 +1,14 @@
 ﻿using _0sechill.Data;
+using _0sechill.Dto.Block.Request;
 using _0sechill.Dto.Block.Response;
 using _0sechill.Models;
 using _0sechill.Services;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace _0sechill.Controllers
 {
@@ -17,18 +19,36 @@ namespace _0sechill.Controllers
         private readonly IExcelService excelService;
         private readonly ILogger<BlockController> logger;
         private readonly ApiDbContext context;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly IMapper mapper;
 
         public BlockController(
             IExcelService excelService,
             ILogger<BlockController> logger,
             ApiDbContext context,
+            UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             this.excelService = excelService;
             this.logger = logger;
             this.context = context;
+            this.userManager = userManager;
             this.mapper = mapper;
+        }
+
+        [HttpPost, Route("AssignBlockManager")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> AssignBlockManager([FromBody] BlockManagerDto dto)
+        {
+            var existBlock = await context.blocks.FirstOrDefaultAsync(x => x.blockId.Equals(Guid.Parse(dto.blockId)));
+            if (existBlock is null)
+                return BadRequest("No Block Found");
+            var existUser = await userManager.FindByIdAsync(dto.userId);
+            if (existUser is null)
+                return BadRequest("No User Found");
+            existBlock.blockManager = existUser;
+            await context.SaveChangesAsync();
+            return Ok($"User {existUser.UserName} has been assign to Block {existBlock.blockName}");
         }
 
         [HttpGet, Route("GetAllBlock")]
@@ -43,6 +63,7 @@ namespace _0sechill.Controllers
             foreach (var block in listBlock)
             {
                 var blockDto = mapper.Map<BlockDto>(block);
+                blockDto.blockManager = block.blockManager.UserName.ToString();
                 listBlockDto.Add(blockDto);
             }
             return Ok(listBlockDto);
