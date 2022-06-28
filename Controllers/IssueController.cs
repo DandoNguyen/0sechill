@@ -1,6 +1,7 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
+using _0sechill.Dto.MailDto;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
 using AutoMapper;
@@ -21,6 +22,7 @@ namespace _0sechill.Controllers
         private readonly ITokenService tokenService;
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
+        private readonly IMailService mailService;
         private readonly IMapper mapper;
         private readonly ILogger<IssueController> logger;
 
@@ -29,6 +31,7 @@ namespace _0sechill.Controllers
             ITokenService tokenService,
             IFileHandlingService fileService,
             IConfiguration config,
+            IMailService mailService,
             IMapper mapper,
             ILogger<IssueController> logger)
         {
@@ -36,6 +39,7 @@ namespace _0sechill.Controllers
             this.tokenService = tokenService;
             this.fileService = fileService;
             this.config = config;
+            this.mailService = mailService;
             this.mapper = mapper;
             this.logger = logger;
         }
@@ -107,6 +111,27 @@ namespace _0sechill.Controllers
                         listFileError 
                     }) { StatusCode = 200 };
                 }
+
+                //Send Email Noti to Block Manager
+                var authorBlockId = await context.userHistories
+                    .Include(x => x.apartment)
+                    .Where(x => x.userId.Equals(Guid.Parse(author.Id)))
+                    .Select(x => x.apartment.blockId)
+                    .FirstOrDefaultAsync();
+                var blockManagerEmail = await context.blocks
+                    .Where(x => x.blockId.Equals(authorBlockId))
+                    .Select(x => x.blockManager.Email)
+                    .FirstOrDefaultAsync();
+
+                var mailContent = new MailContent()
+                {
+                    ToEmail = blockManagerEmail,
+                    Subject = $"Citizen {author.UserName} raised an issue",
+                    Body = $"Citizen {author.UserName} has created an issue {newIssue.title} under category {newIssue.category.cateName}"
+                };
+
+                await mailService.SendMailAsync(mailContent);
+
                 return Ok("Issue Created");
             }
             return BadRequest("Error");
