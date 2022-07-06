@@ -9,6 +9,7 @@ namespace _0sechill.Models.IssueManagement
         public string title { get; set; }
         public string content { get; set; }
         public string status { get; set; }
+        public string feedback { get; set; }
 
         //TimeStamps
         public DateOnly createdDate { get; set; }
@@ -33,6 +34,7 @@ namespace _0sechill.Models.IssueManagement
             ID = Guid.NewGuid();
             createdDate = DateOnly.FromDateTime(new DateTime());
             lastModifiedDate = DateOnly.FromDateTime(new DateTime());
+            feedback = string.Empty;
         }
     }
 }

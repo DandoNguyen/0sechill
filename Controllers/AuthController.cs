@@ -84,6 +84,22 @@ namespace _0sechill.Controllers
             });
         }
 
+        [HttpGet,Route("GetProfile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
+        {
+            var user = await tokenService.DecodeToken(Authorization);
+            if (user is null)
+                return BadRequest("Token in valid");
+            return new JsonResult(new
+            {
+                username = user.UserName,
+                email = user.Email,
+                role = user.role
+            })
+            { StatusCode = 200 };
+        }
+
         [HttpPost]
         [Route("Login")]
         [AllowAnonymous]

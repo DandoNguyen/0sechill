@@ -57,6 +57,7 @@ namespace _0sechill.Controllers
             var listExistIssue = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.category)
+                .Where(x => x.status.Trim().ToLower().Equals("verified"))
                 .ToListAsync();
             if (listExistIssue.Count.Equals(0))
                 return BadRequest("No Issues available!");
@@ -70,6 +71,54 @@ namespace _0sechill.Controllers
                 listIssueDto.Add(issueDto);
             }
             return Ok(listIssueDto);
+        }
+
+        [HttpPost, Route("GiveFeedback")]
+        public async Task<IActionResult> GiveFeedbackAsync(IssueReviewResultDto dto)
+        {
+            var existIssue = await context.issues
+                .FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(dto.issueId)));
+            if (existIssue == null) return BadRequest("No Issue Found");
+
+            existIssue.feedback = dto.feedback;
+
+            switch (dto.isVerified)
+            {
+                case true:
+                    existIssue.status = "verified";
+                    break;
+                case false:
+                    existIssue.status = "rejected";
+                    break;
+            }
+
+            context.issues.Update(existIssue);
+            await context.SaveChangesAsync();
+            return Ok("FeedBack Received");
+        }
+
+        [HttpGet, Route("GetAllPending")]
+        public async Task<IActionResult> GetAllPendingIssuesAsync()
+        {
+            var listIssuePending = await context.issues
+                .Include(x => x.author)
+                .Include(x => x.category)
+                .Where(X => X.status.Trim().ToLower().Equals("pending"))
+                .ToListAsync();
+            var listIssuePendingDto = new List<IssueDto>();
+            foreach (var issue in listIssuePending)
+            {
+                var issueDto = mapper.Map<IssueDto>(issue);
+                issueDto.authorName = issue.author.UserName;
+                issueDto.cateName = issue.category.cateName;
+                listIssuePendingDto.Add(issueDto);
+            }
+
+            if (listIssuePendingDto.Count.Equals(0))
+            {
+                return NoContent();
+            }
+            return Ok(listIssuePendingDto);
         }
 
         [HttpPost, Route("CreateIssue")]
@@ -88,6 +137,7 @@ namespace _0sechill.Controllers
                 var newIssue = mapper.Map<Issues>(dto);
                 newIssue.authorId = author.Id;
                 newIssue.cateId = Guid.Parse(dto.cateId);
+                newIssue.status = "pending";
                 await context.issues.AddAsync(newIssue);
                 await context.SaveChangesAsync();
 
