@@ -4,10 +4,8 @@ using _0sechill.Dto.Issues.Response;
 using _0sechill.Dto.MailDto;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
+using _0sechill.Static;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +55,7 @@ namespace _0sechill.Controllers
             var listExistIssue = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.category)
-                .Where(x => x.status.Trim().ToLower().Equals("verified"))
+                .Where(x => x.status.Trim().ToLower().Equals(IssueStatus.verified.Trim().ToLower()))
                 .ToListAsync();
             if (listExistIssue.Count.Equals(0))
                 return BadRequest("No Issues available!");
@@ -85,10 +83,10 @@ namespace _0sechill.Controllers
             switch (dto.isVerified)
             {
                 case true:
-                    existIssue.status = "verified";
+                    existIssue.status = IssueStatus.verified.Trim().ToLower();
                     break;
                 case false:
-                    existIssue.status = "rejected";
+                    existIssue.status = IssueStatus.rejected.Trim().ToLower();
                     break;
             }
 
@@ -103,7 +101,7 @@ namespace _0sechill.Controllers
             var listIssuePending = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.category)
-                .Where(X => X.status.Trim().ToLower().Equals("pending"))
+                .Where(X => X.status.Trim().ToLower().Equals(IssueStatus.pending))
                 .ToListAsync();
             var listIssuePendingDto = new List<IssueDto>();
             foreach (var issue in listIssuePending)
@@ -137,7 +135,7 @@ namespace _0sechill.Controllers
                 var newIssue = mapper.Map<Issues>(dto);
                 newIssue.authorId = author.Id;
                 newIssue.cateId = Guid.Parse(dto.cateId);
-                newIssue.status = "pending";
+                newIssue.status = IssueStatus.pending;
                 await context.issues.AddAsync(newIssue);
                 await context.SaveChangesAsync();
 
