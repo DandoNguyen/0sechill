@@ -19,6 +19,9 @@ namespace _0sechill.Models
         public DateTime TokenCreatedDate { get; set; }
         public DateTime TokenExpireDate { get; set; }
 
+        //Assign Block offset if user is manager
+        public virtual Block block { get; set; }
+
         //Collection offset
         public ICollection<UserHistory> userHistories { get; set; }
         public ICollection<Issues> issues { get; set; }

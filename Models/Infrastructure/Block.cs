@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace _0sechill.Models
 {
@@ -9,7 +10,10 @@ namespace _0sechill.Models
         [Required]
         public string blockName { get; set; }
         public int flourAmount { get; set; }
-        public ApplicationUser blockManager { get; set; }
+        
+        //Block Manager Offset foreign key
+        public virtual ApplicationUser blockManager { get; set; }
+
         public ICollection<Apartment> apartments { get; set; }
     }
 }

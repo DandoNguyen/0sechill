@@ -1,8 +1,10 @@
-﻿using _0sechill.Dto.UserDto.Request;
+﻿using _0sechill.Dto.Account.Request;
+using _0sechill.Dto.UserDto.Request;
 using _0sechill.Dto.UserDto.Response;
 using _0sechill.Models;
 using _0sechill.Models.Dto.UserDto.Request;
 using _0sechill.Services;
+using _0sechill.Static;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +37,54 @@ namespace _0sechill.Controllers
             this.mapper = mapper;
         }
 
+        [HttpPost, Route("CreateStaffAccount")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> CreateAccountAsync(CreateStaffAccountDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await userManager.FindByEmailAsync(dto.email);
+                if (existingUser is not null)
+                    return BadRequest(new AuthResponseDto()
+                    {
+                        success = false,
+                        message =
+                        {
+                            $"Email {dto.email} has been used"
+                        }
+                    });
+                var newUser = mapper.Map<ApplicationUser>(existingUser);
+                newUser.role = UserRole.Staff;
+                var isCreated = await userManager.CreateAsync(newUser);
+                if (isCreated.Succeeded)
+                {
+                    return Ok(new AuthResponseDto()
+                    {
+                        success = true,
+                        message =
+                        {
+                            $"Staff {dto.username} account created"
+                        }
+                    });
+                }
+                else
+                    return new JsonResult(new AuthResponseDto()
+                    {
+                        success = false,
+                        message = isCreated.Errors.Select(x => x.Description).ToList()
+                    })
+                    { StatusCode = 500 };
+            }
+            return BadRequest(new AuthResponseDto()
+            {
+                success = false,
+                message =
+                {
+                    "Invald Payload!"
+                }
+            });
+        }
+
         [HttpPost]
         [Route("Register")]
         [AllowAnonymous]
@@ -55,6 +105,7 @@ namespace _0sechill.Controllers
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
+                newUser.role = UserRole.Citizen;
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
@@ -72,7 +123,8 @@ namespace _0sechill.Controllers
                     {
                         success = false,
                         message = isCreated.Errors.Select(x => x.Description).ToList()
-                    }) { StatusCode = 500 };
+                    })
+                    { StatusCode = 500 };
             }
             return BadRequest(new AuthResponseDto()
             {
@@ -84,7 +136,7 @@ namespace _0sechill.Controllers
             });
         }
 
-        [HttpGet,Route("GetProfile")]
+        [HttpGet, Route("GetProfile")]
         [Authorize]
         public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
         {
