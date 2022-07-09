@@ -5,6 +5,7 @@ using _0sechill.Static;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,13 +17,16 @@ namespace _0sechill.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApiDbContext context;
+        private readonly RoleManager<IdentityRole> roleManager;
         private readonly IMapper mapper;
 
         public AccountController(
             ApiDbContext context,
+            RoleManager<IdentityRole> roleManager,
             IMapper mapper)
         {
             this.context = context;
+            this.roleManager = roleManager;
             this.mapper = mapper;
         }
 
@@ -68,6 +72,11 @@ namespace _0sechill.Controllers
             if (existBlock.blockManager is not null)
             {
                 return BadRequest($"Block {existBlock.blockName} has already been assigned to manager {existBlock.blockManager.UserName}");
+            }
+
+            if (existUser.role)
+            {
+
             }
 
             existBlock.blockManager = existUser;
