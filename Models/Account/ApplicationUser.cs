@@ -1,4 +1,5 @@
-﻿using _0sechill.Models.IssueManagement;
+﻿using _0sechill.Models.Account;
+using _0sechill.Models.IssueManagement;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
@@ -21,6 +22,9 @@ namespace _0sechill.Models
 
         //Assign Block offset if user is manager
         public virtual Block block { get; set; }
+
+        //Foreign Key offset
+        public virtual Department department { get; set; }
 
         //Collection offset
         public ICollection<UserHistory> userHistories { get; set; }
