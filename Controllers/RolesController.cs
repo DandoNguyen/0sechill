@@ -1,6 +1,9 @@
 ﻿using _0sechill.Data;
+using _0sechill.Dto.Account.Response;
+using _0sechill.Dto.Role.Request;
 using _0sechill.Models;
 using _0sechill.Static;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,23 +19,35 @@ namespace _0sechill.Controllers
     {
         private readonly ApiDbContext context;
         private readonly UserManager<ApplicationUser> userManager;
+        private readonly IMapper mapper;
         private readonly RoleManager<IdentityRole> roleManager;
 
         public RolesController(
             ApiDbContext context,
             UserManager<ApplicationUser> userManager,
+            IMapper mapper,
             RoleManager<IdentityRole> roleManager)
         {
             this.context = context;
             this.userManager = userManager;
+            this.mapper = mapper;
             this.roleManager = roleManager;
         }
 
-        [HttpGet, Route("GetAllUsers")]
+        [HttpGet, Route("GetAllStaff")]
         public async Task<IActionResult> GetAllUserAsync()
         {
             var listUser = await userManager.Users.ToListAsync();
-            return Ok(listUser);
+            var listStaffDto = new List<StaffDto>();
+            foreach (var user in listUser)
+            {
+                if (user.role.Equals(UserRole.Staff))
+                {
+                    var staffDto = mapper.Map<StaffDto>(user);
+                    listStaffDto.Add(staffDto);
+                }
+            }
+            return Ok(listStaffDto);
         }
 
         [HttpGet, Route("GetAllRoles")]
@@ -48,6 +63,10 @@ namespace _0sechill.Controllers
             var staticRoles = UserRole.GetFields();
             foreach (var role in staticRoles)
             {
+                if (await roleManager.RoleExistsAsync(role))
+                {
+                    continue;
+                }
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
             await context.SaveChangesAsync();
@@ -70,6 +89,63 @@ namespace _0sechill.Controllers
                 }
                 return BadRequest("Error in creating Role");
             }
+        }
+
+        //Assign Role
+        [HttpPost, Route("AssignRole")]
+        public async Task<IActionResult> AssignRoleAsync(AssignRoleDto dto) 
+        {
+            var existUser = await userManager.FindByIdAsync(dto.userId);
+            if (existUser is null)
+                return BadRequest("User not Found");
+
+            var roleResult = await roleManager.RoleExistsAsync(dto.roleName);
+            if (!roleResult)
+                return BadRequest("Role not found");
+
+            try
+            {
+                await userManager.AddToRoleAsync(existUser, dto.roleName);
+                await context.SaveChangesAsync();
+                return Ok($"User {existUser.UserName} has been assigned with role {dto.roleName}");
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult($"Assign Role process returned an error:\n{ex.Message}");
+            }
+        }
+
+        [HttpGet, Route("GetUserRole")]
+        public async Task<IActionResult> GetUserRoleAsync([FromBody] string userId)
+        {
+            var existUser = await userManager.FindByIdAsync(userId);
+            if (existUser is null)
+                return BadRequest("User Not Found");
+
+            var roles = await userManager.GetRolesAsync(existUser);
+            if (!roles.Any())
+                return Ok($"User {existUser.UserName} hasn't been assigned to any roles");
+            return Ok(roles);
+        }
+
+        [HttpDelete, Route("RemoveRole")]
+        public async Task<IActionResult> RemoveRoleAsync(RemoveRoleDto dto)
+        {
+            var existUser = await userManager.FindByIdAsync(dto.userID);
+            if (existUser is null)
+                return BadRequest("User Not Found");
+            
+            var listResult = new List<string>();
+            foreach (var role in dto.listRoles)
+            {
+                if (await roleManager.RoleExistsAsync(role))
+                {
+                    await userManager.RemoveFromRoleAsync(existUser, role);
+                    listResult.Add($"Role {role} removed");
+                }
+            }
+            await context.SaveChangesAsync();
+            return Ok(listResult);
         }
     }
 }

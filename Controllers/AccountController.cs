@@ -74,9 +74,9 @@ namespace _0sechill.Controllers
                 return BadRequest($"Block {existBlock.blockName} has already been assigned to manager {existBlock.blockManager.UserName}");
             }
 
-            if (existUser.role)
+            if (existUser.role.Equals(UserRole.BlockManager))
             {
-
+                return BadRequest($"User {existUser.UserName} doesn't has appropriate role");
             }
 
             existBlock.blockManager = existUser;
