@@ -1,4 +1,5 @@
 ﻿using _0sechill.Models;
+using _0sechill.Models.Account;
 using _0sechill.Models.IssueManagement;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace _0sechill.Data
             base.OnModelCreating(builder);
         }
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
+        public DbSet<Department> departments { get; set; }
         public DbSet<Comments> comments { get; set; }
         public DbSet<Apartment> apartments { get; set; }
         public DbSet<Block> blocks { get; set; }

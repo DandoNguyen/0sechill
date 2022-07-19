@@ -95,6 +95,9 @@ namespace _0sechill.Controllers
             return Ok("FeedBack Received");
         }
 
+        //assign issue to Staff
+
+
         [HttpGet, Route("GetAllPending")]
         public async Task<IActionResult> GetAllPendingIssuesAsync()
         {
