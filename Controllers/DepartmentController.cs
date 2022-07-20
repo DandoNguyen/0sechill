@@ -79,7 +79,7 @@ namespace _0sechill.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest($"Error in Adding user {existUser.UserName} to department {existDept.departmentName}");
+                    return BadRequest($"Error in Adding user {existUser.UserName} to department {existDept.departmentName}:\n{ex.Message}");
                 }
             }
             return BadRequest($"User {existUser.UserName} does not have valid Role");
