@@ -25,6 +25,7 @@ namespace _0sechill.Data
 
             base.OnModelCreating(modelBuilder);
         }
+        public DbSet<AssignIssue> assignIssues { get; set; }
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<Department> departments { get; set; }
         public DbSet<Comments> comments { get; set; }

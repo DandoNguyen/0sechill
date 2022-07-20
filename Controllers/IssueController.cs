@@ -2,21 +2,26 @@
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Dto.MailDto;
+using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
 using _0sechill.Static;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
+    [ValidateAntiForgeryToken]
     [ApiController]
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class IssueController : ControllerBase
     {
         private readonly ApiDbContext context;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly ITokenService tokenService;
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
@@ -26,6 +31,7 @@ namespace _0sechill.Controllers
 
         public IssueController(
             ApiDbContext context,
+            UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
             IFileHandlingService fileService,
             IConfiguration config,
@@ -34,6 +40,7 @@ namespace _0sechill.Controllers
             ILogger<IssueController> logger)
         {
             this.context = context;
+            this.userManager = userManager;
             this.tokenService = tokenService;
             this.fileService = fileService;
             this.config = config;
@@ -156,36 +163,85 @@ namespace _0sechill.Controllers
 
                 if (!listFileError.Count.Equals(0))
                 {
-                    return new JsonResult(new 
+                    return new JsonResult(new
                     {
-                        message = "Issue created but some files cannot be uploaded: ", 
-                        listFileError 
-                    }) { StatusCode = 200 };
+                        message = "Issue created but some files cannot be uploaded: ",
+                        listFileError
+                    })
+                    { StatusCode = 200 };
                 }
 
                 //Send Email Noti to Block Manager
-                var authorBlockId = await context.userHistories
-                    .Include(x => x.apartment)
-                    .Where(x => x.userId.Equals(Guid.Parse(author.Id)))
-                    .Select(x => x.apartment.blockId)
-                    .FirstOrDefaultAsync();
-                var blockManagerEmail = await context.blocks
-                    .Where(x => x.blockId.Equals(authorBlockId))
-                    .Select(x => x.blockManager.Email)
-                    .FirstOrDefaultAsync();
-
-                var mailContent = new MailContent()
+                var emailResult = await SendNotiToBlockManager(author.Id, newIssue);
+                if (emailResult)
                 {
-                    ToEmail = blockManagerEmail,
-                    Subject = $"Citizen {author.UserName} raised an issue",
-                    Body = $"Citizen {author.UserName} has created an issue {newIssue.title} under category {newIssue.category.cateName}"
-                };
 
-                await mailService.SendMailAsync(mailContent);
+                    return Ok("Issue Created");
+                }
 
-                return Ok("Issue Created");
+                return Ok("Issue Created\nNotification has not been made!");
             }
             return BadRequest("Error");
+        }
+
+        //Assign Issue to Staff
+        [HttpPost, Route("AssignIssue")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AssignIssueAsync(AssignIssueStaffDto dto)
+        {
+            var existStaff = await userManager.FindByIdAsync(dto.staffId);
+            if (existStaff == null) return BadRequest("Staff not found");
+
+            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(dto.issueId)));
+            if (existIssue == null) return BadRequest("Issue not found");
+
+            //if issues already in Assign Issue Table then this issue is not valid
+            var invalidIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Where(x => x.issueId.Equals(Guid.Parse(dto.issueId)))
+                .FirstOrDefaultAsync();
+            if (invalidIssue is not null) return BadRequest($"Issue {invalidIssue.Issue.title} had already been assigned");
+
+            var newAssignIssue = new AssignIssue();
+            newAssignIssue.staffId = dto.staffId;
+            newAssignIssue.issueId = Guid.Parse(dto.issueId);
+            await context.assignIssues.AddAsync(newAssignIssue);
+            await context.SaveChangesAsync();
+            return Ok($"Staff {existStaff.UserName} has been assigned to Issue {existIssue.title}");
+        }
+
+        private async Task<bool> SendNotiToBlockManager(string userId, Issues newIssue)
+        {
+            var author = await userManager.FindByIdAsync(userId);
+            if (author is null) return false;
+
+            var authorBlockId = await context.userHistories
+                .Include(x => x.apartment)
+                .Where(x => x.userId.Equals(Guid.Parse(userId)))
+                .Select(x => x.apartment.blockId)
+                .FirstOrDefaultAsync();
+            var blockManagerEmail = await context.blocks
+                .Where(x => x.blockId.Equals(authorBlockId))
+                .Select(x => x.blockManager.Email)
+                .FirstOrDefaultAsync();
+
+            var mailContent = new MailContent()
+            {
+                ToEmail = blockManagerEmail,
+                Subject = $"Citizen {author.UserName} raised an issue",
+                Body = $"Citizen {author.UserName} has created an issue {newIssue.title} under category {newIssue.category.cateName}"
+            };
+
+            try
+            {
+                await mailService.SendMailAsync(mailContent);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error in using email service: {ex.Message}");
+                return false;
+            }
         }
 
         [HttpPut, Route("EditIssue")]
