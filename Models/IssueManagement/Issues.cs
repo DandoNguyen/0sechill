@@ -24,6 +24,8 @@ namespace _0sechill.Models.IssueManagement
         public string authorId { get; set; }
         public ApplicationUser author { get; set; }
 
+        public AssignIssue assignIssue { get; set; }
+
         //Collection offset
         public ICollection<FilePath> files { get; set; }
         public ICollection<Comments> comments { get; set; }

@@ -21,7 +21,7 @@ namespace _0sechill.Models
         public DateTime TokenExpireDate { get; set; }
 
         //Assign Block offset if user is manager
-        public virtual Block block { get; set; }
+        public Block block { get; set; }
 
         //Foreign Key offset
         public virtual Department department { get; set; }
@@ -30,5 +30,6 @@ namespace _0sechill.Models
         public ICollection<UserHistory> userHistories { get; set; }
         public ICollection<Issues> issues { get; set; }
         public ICollection<Comments> comments { get; set; }
+        public ICollection<AssignIssue> assignIssues { get; set; }
     }
 }
