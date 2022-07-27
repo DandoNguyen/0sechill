@@ -8,5 +8,7 @@
         public Issues issues { get; set; }
         public string userId { get; set; }
         public ApplicationUser users { get; set; }
+        public Guid assignIssueId { get; set; }
+        public AssignIssue assignIssue { get; set; }
     }
 }

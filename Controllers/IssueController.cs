@@ -1,4 +1,5 @@
 ﻿using _0sechill.Data;
+using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Dto.MailDto;
@@ -256,6 +257,62 @@ namespace _0sechill.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        //result management to resolving assign issued
+
+        //Staff sent feedback and result check
+        [HttpPut, Route("StaffResolve")]
+        public async Task<IActionResult> StaffResolveAsync([FromForm] StaffResolveDto dto, List<IFormFile> listFiles)
+        {
+            var existIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Include(x => x.staff)
+                .Where(x => x.ID.Equals(Guid.Parse(dto.assignIssueId)))
+                .FirstOrDefaultAsync();
+            if (existIssue is null) return BadRequest("Issue Not Found");
+
+            //Upload Files
+            var listErrorMsg = new List<UploadFileResultDto>();
+            foreach (var file in listFiles)
+            {
+                try
+                {
+                    await fileService.UploadFile(file, existIssue.ID.ToString(), "App_Date\\AssignIssueResult");
+                }
+                catch (Exception ex)
+                {
+                    listErrorMsg.Add(new UploadFileResultDto
+                    {
+                        isSucceeded = false,
+                        message = ex.Message
+                    });
+                }
+            }
+
+            try
+            {
+                mapper.Map(dto, existIssue);
+                context.assignIssues.Update(existIssue);
+                await context.SaveChangesAsync();
+                if (listErrorMsg.Count.Equals(0))
+                {
+                    return Ok("Feedback Received!");
+                }
+                return Ok(new
+                {
+                    message = "Feedback Received without files\n",
+                    listErrorMsg
+                });              
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        //=================================
+        //=================================
+        //=================================
 
         private async Task<bool> SendNotiToBlockManager(string userId, Issues newIssue)
         {

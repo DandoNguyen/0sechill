@@ -91,6 +91,9 @@ namespace _0sechill.Services.Class
                     case "App_Data\\Avatar":
                         newFile.userId = ownerId;
                         break;
+                    case "App_Data\\AssignIssueResult":
+                        newFile.assignIssueId = Guid.Parse(ownerId);
+                        break;
                 }
                 newFile.filePath = finalPath;
 
