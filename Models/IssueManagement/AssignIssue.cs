@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace _0sechill.Models.IssueManagement
 {
@@ -10,5 +11,7 @@ namespace _0sechill.Models.IssueManagement
         public ApplicationUser staff { get; set; }
         public Guid issueId { get; set; }
         public Issues Issue { get; set; }
+        public bool isConfirmed { get; set; }
+        public string staffFeedback { get; set; }
     }
 }

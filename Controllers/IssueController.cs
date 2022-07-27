@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Controllers
 {
@@ -208,6 +209,52 @@ namespace _0sechill.Controllers
             await context.assignIssues.AddAsync(newAssignIssue);
             await context.SaveChangesAsync();
             return Ok($"Staff {existStaff.UserName} has been assigned to Issue {existIssue.title}");
+        }
+
+        //Remove Assigned Staff
+        [HttpDelete, Route("RemoveAssignIssue")]
+        public async Task<IActionResult> RemoveAssignedIssueAsync([FromBody] [Required] string asignIssueId)
+        {
+            var existAssignIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Include(x => x.staff)
+                .FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(asignIssueId)));
+            if (existAssignIssue is null) return BadRequest("Issue not found");
+
+            try
+            {
+                context.assignIssues.Remove(existAssignIssue);
+                await context.SaveChangesAsync();
+                return Ok($"Staff {existAssignIssue.staff.UserName} has been removed from Issue {existAssignIssue.Issue.title}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        //Staff comfirmation
+        [HttpPut, Route("StaffConfirmation")]
+        public async Task<IActionResult> StaffComfirmAsync(StaffComfirmDto dto)
+        {
+            var existIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Include(x => x.staff)
+                .Where(x => x.ID.Equals(Guid.Parse(dto.assignIssueId)))
+                .FirstOrDefaultAsync();
+            if (existIssue is null) return BadRequest("Issue Not Found");
+
+            try
+            {
+                mapper.Map(dto, existIssue);
+                context.assignIssues.Update(existIssue);
+                await context.SaveChangesAsync();
+                return Ok("Staff Confirm Received");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private async Task<bool> SendNotiToBlockManager(string userId, Issues newIssue)
