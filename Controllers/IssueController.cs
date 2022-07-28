@@ -64,6 +64,7 @@ namespace _0sechill.Controllers
             var listExistIssue = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.category)
+                .Include(x => x.files)
                 .Where(x => x.status.Trim().ToLower().Equals(IssueStatus.verified.Trim().ToLower()))
                 .ToListAsync();
             if (listExistIssue.Count.Equals(0))
@@ -75,9 +76,32 @@ namespace _0sechill.Controllers
                 var issueDto = mapper.Map<IssueDto>(issue);
                 issueDto.cateName = issue.category.cateName;
                 issueDto.authorName = $"{issue.author.firstName} {issue.author.lastName}";
+
+                if (!issue.files.Count.Equals(0))
+                {
+                    foreach (var fileObject in issue.files)
+                    {
+                        issueDto.files.Add(await GetFilePaths(fileObject.ID.ToString()));
+                    }
+                }
+
                 listIssueDto.Add(issueDto);
             }
             return Ok(listIssueDto);
+        }
+
+        //private func get file paths
+        private async Task<string> GetFilePaths(string fileId)
+        {
+            var filePathString = await context.filePaths
+                .Where(x => x.ID.Equals(Guid.Parse(fileId)))
+                .Select(x => x.filePath)
+                .FirstOrDefaultAsync();
+            if (filePathString is null)
+            {
+                return null;
+            }
+            return filePathString;
         }
 
         [HttpPost, Route("GiveFeedback")]
@@ -383,13 +407,22 @@ namespace _0sechill.Controllers
                 return BadRequest("Issue ID is null");
             }
 
-            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(issueId)));
+            var existIssue = await context.issues
+                .Include(x => x.files)
+                .Where(x => x.ID.Equals(Guid.Parse(issueId))).FirstOrDefaultAsync();
             if (existIssue is null)
             {
                 return BadRequest("Issue Not Found");
             }
             try
             {
+                if (!existIssue.files.Count.Equals(0))
+                {
+                    foreach (var file in existIssue.files)
+                    {
+                        await fileService.RemoveFiles(file.ID.ToString());
+                    }
+                }
                 context.issues.Remove(existIssue);
                 await context.SaveChangesAsync();
                 return Ok($"Issue {existIssue?.title} deleted");

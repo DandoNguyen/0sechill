@@ -8,6 +8,10 @@
         public string status { get; set; }
         public string authorName { get; set; }
         public string cateName { get; set; }
+        public List<string> files { get; set; }
+
+        //Assign Staff Section and result info
+        public string assignIssueModelId { get; set; }
 
         //TimeStamps
         public DateOnly createdDate { get; set; }

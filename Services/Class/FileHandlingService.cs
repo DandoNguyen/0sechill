@@ -22,6 +22,7 @@ namespace _0sechill.Services.Class
             this.logger = logger;
         }
 
+        //Public service function that upload files to specific directory
         public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, string rootPath)
         {
             var rootFilePath = "~" + rootPath.Trim();
@@ -138,7 +139,26 @@ namespace _0sechill.Services.Class
             }
         }
 
-        //check for image only
+        //public service function that removes the files in the directory
+        public async Task RemoveFiles(string fileId)
+        {
+            var fileObject = await context.filePaths
+                .Where(x => x.ID.Equals(Guid.Parse(fileId)))
+                .FirstOrDefaultAsync();
+            if (fileObject is not null && fileObject.filePath is not null)
+            {
+                string[] files = Directory.GetFiles(fileObject.filePath);
+                foreach (var file in files)
+                {
+                    System.IO.File.Delete(file);
+                }
+
+                context.filePaths.Remove(fileObject);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        //check for image only // => move to IsValidFileType function to check for image type file too
         private static bool IsValidAvatar(IFormFile file)
         {
             string fileExtenstion = Path.GetExtension(file.FileName).ToLower();
