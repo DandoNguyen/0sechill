@@ -2,7 +2,6 @@
 using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Models.IssueManagement;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Services.Class
 {

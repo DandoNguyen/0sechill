@@ -81,27 +81,13 @@ namespace _0sechill.Controllers
                 {
                     foreach (var fileObject in issue.files)
                     {
-                        issueDto.files.Add(await GetFilePaths(fileObject.ID.ToString()));
+                        issueDto.files.Add(fileObject.ID.ToString());
                     }
                 }
 
                 listIssueDto.Add(issueDto);
             }
             return Ok(listIssueDto);
-        }
-
-        //private func get file paths
-        private async Task<string> GetFilePaths(string fileId)
-        {
-            var filePathString = await context.filePaths
-                .Where(x => x.ID.Equals(Guid.Parse(fileId)))
-                .Select(x => x.filePath)
-                .FirstOrDefaultAsync();
-            if (filePathString is null)
-            {
-                return null;
-            }
-            return filePathString;
         }
 
         [HttpPost, Route("GiveFeedback")]
