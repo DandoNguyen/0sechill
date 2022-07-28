@@ -140,7 +140,7 @@ namespace _0sechill.Services.Class
             {
                 foreach (var worksheet in package.Workbook.Worksheets)
                 {
-                    if (worksheet.Name.Equals(worksheetName))
+                    if (worksheet.Name.Equals(worksheetName.Trim()))
                     {
                         //create an excel query
                         var query = (from cell in worksheet.Cells[1,1,4,4]
