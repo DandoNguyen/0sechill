@@ -12,6 +12,7 @@ namespace _0sechill.Models.IssueManagement
         public Guid issueId { get; set; }
         public Issues Issue { get; set; }
         public bool isResolved { get; set; }
+        public bool isConfirmedByAdmin { get; set; }
         public ICollection<FilePath> files { get; set; }
         public bool isConfirmed { get; set; }
         public string staffFeedback { get; set; }

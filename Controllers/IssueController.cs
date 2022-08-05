@@ -58,6 +58,53 @@ namespace _0sechill.Controllers
         //    var username = await DecodeToken(Authorization);
         //}
 
+        //Add search func for issue
+        [HttpPost, Route("SearchIssue")]
+        public async Task<IActionResult> FilterIssueAsync(SearchIssueParamsDto dto)
+        {
+            //Check if there is any search params to avoid overload
+            if (dto is null)
+            {
+                return NoContent();
+            }
+
+            var listIssueDto = new List<IssueDto>();
+            var listIssueQueryable = context.issues
+                .Include(x => x.author)
+                .AsQueryable();
+
+            //Issue Title
+            if (!string.IsNullOrEmpty(dto.title))
+            {
+                listIssueQueryable = listIssueQueryable.Where(x => x.title.Contains(dto.title.Trim()));
+            }
+            //Issue Author's Username
+            if (!string.IsNullOrEmpty(dto.authorUsername))
+            {
+                listIssueQueryable = listIssueQueryable.Where(x => x.author.UserName.Contains(dto.authorUsername.Trim()));
+            }
+            //Issue Created Date
+            if (!dto.dateFrom.Equals(DateTime.MinValue) && !dto.dateTo.Equals(DateTime.MinValue) && dto.dateFrom.CompareTo(dto.dateTo) < 0)
+            {
+                listIssueQueryable = listIssueQueryable.Where(x => x.createdDate >= dto.dateFrom && x.createdDate <= dto.dateTo);
+            }
+            var ListIssueResult = await listIssueQueryable.ToListAsync();
+
+            if (ListIssueResult.Count.Equals(0))
+            {
+                return NoContent();
+            }
+            else
+            {
+                foreach (var issue in ListIssueResult)
+                {
+                    var issueDto = mapper.Map<IssueDto>(issue);
+                    listIssueDto.Add(issueDto);
+                }
+                return Ok(listIssueDto);
+            }
+        }
+
         [HttpGet, Route("GetAllIssue")]
         public async Task<IActionResult> GetAllIssueAsync()
         {
@@ -113,9 +160,6 @@ namespace _0sechill.Controllers
             await context.SaveChangesAsync();
             return Ok("FeedBack Received");
         }
-
-        //assign issue to Staff
-
 
         [HttpGet, Route("GetAllPending")]
         public async Task<IActionResult> GetAllPendingIssuesAsync()
@@ -304,6 +348,25 @@ namespace _0sechill.Controllers
                 mapper.Map(dto, existIssue);
                 context.assignIssues.Update(existIssue);
                 await context.SaveChangesAsync();
+
+                //Send mail to block manager to review the issue result
+                var issueAuthorId = await context.issues
+                    .Where(x => x.ID.Equals(existIssue.issueId))
+                    .Select(x => x.authorId).FirstOrDefaultAsync();
+                var authorUserHistory = await context.userHistories
+                    .Include(x => x.apartment)
+                    .ThenInclude(x => x.block)
+                    .Where(x => x.userId.Equals(Guid.Parse(issueAuthorId)))
+                    .FirstOrDefaultAsync();
+
+                var mailContent = new MailContent()
+                {
+                    ToEmail = authorUserHistory.apartment.block.blockManager.Email,
+                    Subject = "New Staff's issue Resolve needs your confirmation",
+                    Body = $"Staff {existIssue.staff.UserName} had submitted a result for issue {existIssue.Issue.title} that needs your confirmation"
+                };
+                await mailService.SendMailAsync(mailContent);
+
                 if (listErrorMsg.Count.Equals(0))
                 {
                     return Ok("Feedback Received!");
@@ -320,9 +383,7 @@ namespace _0sechill.Controllers
             }
         }
 
-        //=================================
-        //=================================
-        //=================================
+        //=================================//=================================
 
         private async Task<bool> SendNotiToBlockManager(string userId, Issues newIssue)
         {
