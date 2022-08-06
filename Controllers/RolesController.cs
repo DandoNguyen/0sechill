@@ -34,6 +34,18 @@ namespace _0sechill.Controllers
             this.roleManager = roleManager;
         }
 
+        [HttpPost, Route("TestAdminAccount")]
+        public async Task<IActionResult> AddAdminAsync(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user is null)
+            {
+                return BadRequest("Email not Exist");
+            }
+            await userManager.AddToRoleAsync(user, UserRole.Admin);
+            return Ok($"Admin assigned to {user.Email}");
+        }
+
         [HttpGet, Route("GetAllStaff")]
         public async Task<IActionResult> GetAllUserAsync()
         {
