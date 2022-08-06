@@ -143,11 +143,17 @@ namespace _0sechill.Controllers
             var user = await tokenService.DecodeToken(Authorization);
             if (user is null)
                 return BadRequest("Token in valid");
+
+            var ListRole = new List<string>();
+            foreach (var role in user.role)
+            {
+                ListRole.Add(role.ToString());
+            }
             return new JsonResult(new
             {
                 username = user.UserName,
                 email = user.Email,
-                role = user.role
+                role = ListRole
             })
             { StatusCode = 200 };
         }

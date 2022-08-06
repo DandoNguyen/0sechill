@@ -3,6 +3,7 @@ using _0sechill.Models;
 using _0sechill.Services;
 using _0sechill.Services.Class;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -47,6 +48,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+//Add CORS
+var devCorsPolicy = "devCorsPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(devCorsPolicy, builder => {
+        builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+        //builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        //builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost");
+        //builder.SetIsOriginAllowed(origin => true);
+    });
+});
+
 //Enable authentication and authorization
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
@@ -71,6 +84,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(devCorsPolicy);
 }
 
 app.UseHttpsRedirection();
