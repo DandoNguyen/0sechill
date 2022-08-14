@@ -1,10 +1,11 @@
 using _0sechill.Data;
+using _0sechill.Hubs;
 using _0sechill.Models;
 using _0sechill.Services;
 using _0sechill.Services.Class;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -64,6 +65,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+//Add SignalR Services
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(options =>
+    options.MimeTypes = ResponseCompressionDefaults
+    .MimeTypes.Concat(new[] {"application/octet-stream"})
+);
+
 //For DI
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IExcelService, ExcelService>();
@@ -87,11 +95,14 @@ if (app.Environment.IsDevelopment())
     app.UseCors(devCorsPolicy);
 }
 
+app.UseResponseCompression();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();
