@@ -1,4 +1,5 @@
-﻿using _0sechill.Models.Account;
+﻿using _0sechill.Hubs.Model;
+using _0sechill.Models.Account;
 using _0sechill.Models.IssueManagement;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
@@ -26,10 +27,14 @@ namespace _0sechill.Models
         //Foreign Key offset
         public virtual Department department { get; set; }
 
-        //Collection offset
+        #region Collection offset
         public ICollection<UserHistory> userHistories { get; set; }
         public ICollection<Issues> issues { get; set; }
         public ICollection<Comments> comments { get; set; }
         public ICollection<AssignIssue> assignIssues { get; set; }
+        public ICollection<Message> Messages { get; set; }
+        public ICollection<UserConnection> userConnections { get; set; }
+
+        #endregion
     }
 }

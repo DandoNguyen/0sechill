@@ -2,7 +2,7 @@
 
 namespace _0sechill.Hubs
 {
-    public class ChatHub : Hub
+    public class ChatHub : Hub, IChatHub
     {
         public override async Task OnConnectedAsync()
         {
