@@ -69,15 +69,24 @@ namespace _0sechill.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        [HubMethodName("SendMessage")]
         public async Task SendMessageAsync(string sender, string message, string? roomName)
         {
-            if (string.IsNullOrEmpty(roomName))
+            try
             {
-                await Clients.All.SendAsync("", sender, message);
+                if (string.IsNullOrEmpty(roomName))
+                {
+                    await Clients.All.SendAsync("", sender, message);
+
+                }
+                else
+                {
+                    await Clients.All.SendAsync("", sender, message);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await Clients.All.SendAsync("", sender, message);
+                await Clients.All.SendAsync("", ex);
             }
         }
     }
