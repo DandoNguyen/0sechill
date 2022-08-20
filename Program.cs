@@ -54,7 +54,7 @@ var devCorsPolicy = "devCorsPolicy";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(devCorsPolicy, builder => {
-        builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+        builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         //builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         //builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost");
         //builder.SetIsOriginAllowed(origin => true);

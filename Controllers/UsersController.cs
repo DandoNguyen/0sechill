@@ -44,7 +44,15 @@ namespace _0sechill.Controllers
             {
                 return NoContent();
             }
-            return Ok(userList);
+
+            var listUserDto = new List<userProfileDto>();
+            foreach (var user in userList)
+            {
+                var userDto = new userProfileDto();
+                mapper.Map(user, userDto);
+                listUserDto.Add(userDto);
+            }
+            return Ok(listUserDto);
         }
 
         [HttpGet]

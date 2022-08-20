@@ -1,4 +1,5 @@
-﻿using _0sechill.Models;
+﻿using _0sechill.Hubs.Model;
+using _0sechill.Models;
 using _0sechill.Models.Account;
 using _0sechill.Models.IssueManagement;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -25,6 +26,10 @@ namespace _0sechill.Data
 
             base.OnModelCreating(modelBuilder);
         }
+
+        public DbSet<Room> chatRooms { get; set; }
+        public DbSet<Message> chatMessages { get; set; }
+        public DbSet<UserConnection> userConnections { get; set; }
         public DbSet<AssignIssue> assignIssues { get; set; }
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<Department> departments { get; set; }

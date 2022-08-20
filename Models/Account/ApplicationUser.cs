@@ -13,7 +13,7 @@ namespace _0sechill.Models
         public string userCode { get; set; } 
         public string firstName { get; set; }
         public string lastName { get; set; }
-        public DateOnly DOB { get; set; }
+        public DateTime DOB { get; set; }
         public string role { get; set; }
 
         //Refresh Token
