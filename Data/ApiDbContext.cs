@@ -29,7 +29,6 @@ namespace _0sechill.Data
 
         public DbSet<Room> chatRooms { get; set; }
         public DbSet<Message> chatMessages { get; set; }
-        public DbSet<UserConnection> userConnections { get; set; }
         public DbSet<AssignIssue> assignIssues { get; set; }
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<Department> departments { get; set; }

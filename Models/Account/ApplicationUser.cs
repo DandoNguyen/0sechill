@@ -33,7 +33,6 @@ namespace _0sechill.Models
         public ICollection<Comments> comments { get; set; }
         public ICollection<AssignIssue> assignIssues { get; set; }
         public ICollection<Message> Messages { get; set; }
-        public ICollection<UserConnection> userConnections { get; set; }
 
         #endregion
     }

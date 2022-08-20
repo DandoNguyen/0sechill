@@ -20,10 +20,10 @@ namespace _0sechill.Hubs.Model
         #region Author - Foreign Key
 
         public string userId { get; set; }
-        public virtual ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; }
 
-        public string roomId { get; set; }
-        public virtual Room Room { get; set; }
+        public Guid roomId { get; set; }
+        public Room Room { get; set; }
 
         #endregion
     }
