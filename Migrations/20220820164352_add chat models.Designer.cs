@@ -11,13 +11,92 @@ using _0sechill.Data;
 namespace _0sechill.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20220612152419_update Issue")]
-    partial class updateIssue
+    [Migration("20220820164352_add chat models")]
+    partial class addchatmodels
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
+
+            modelBuilder.Entity("_0sechill.Hubs.Model.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("RoomID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("createdDateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("message")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("userId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomID");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("chatMessages");
+                });
+
+            modelBuilder.Entity("_0sechill.Hubs.Model.Room", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("isGroupChat")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("roomName")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("chatRooms");
+                });
+
+            modelBuilder.Entity("_0sechill.Hubs.Model.UserConnection", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("RoomID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("userId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("RoomID");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("userConnections");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Account.Department", b =>
+                {
+                    b.Property<Guid>("departmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("departmentName")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("departmentId");
+
+                    b.ToTable("departments");
+                });
 
             modelBuilder.Entity("_0sechill.Models.Apartment", b =>
                 {
@@ -59,7 +138,7 @@ namespace _0sechill.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("DOB")
+                    b.Property<DateTime>("DOB")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -111,6 +190,9 @@ namespace _0sechill.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("departmentId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("firstName")
                         .HasColumnType("TEXT");
 
@@ -135,6 +217,8 @@ namespace _0sechill.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
+                    b.HasIndex("departmentId");
+
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -142,6 +226,9 @@ namespace _0sechill.Migrations
                 {
                     b.Property<Guid>("blockId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("blockManagerId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("blockName")
@@ -153,7 +240,44 @@ namespace _0sechill.Migrations
 
                     b.HasKey("blockId");
 
+                    b.HasIndex("blockManagerId")
+                        .IsUnique();
+
                     b.ToTable("blocks");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.AssignIssue", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("isConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isConfirmedByAdmin")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isResolved")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("issueId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("staffFeedback")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("staffId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("issueId")
+                        .IsUnique();
+
+                    b.HasIndex("staffId");
+
+                    b.ToTable("assignIssues");
                 });
 
             modelBuilder.Entity("_0sechill.Models.IssueManagement.Category", b =>
@@ -170,10 +294,52 @@ namespace _0sechill.Migrations
                     b.ToTable("categories");
                 });
 
-            modelBuilder.Entity("_0sechill.Models.IssueManagement.File", b =>
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.Comments", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("authorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("authorsId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("content")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("isChild")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("isPrivate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("issueId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("issuesID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("parentId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("authorsId");
+
+                    b.HasIndex("issuesID");
+
+                    b.ToTable("comments");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.FilePath", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("assignIssueId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("filePath")
@@ -182,11 +348,24 @@ namespace _0sechill.Migrations
                     b.Property<Guid>("issueId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("issuesID")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("userId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("usersId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("ID");
 
-                    b.HasIndex("issueId");
+                    b.HasIndex("assignIssueId");
 
-                    b.ToTable("files");
+                    b.HasIndex("issuesID");
+
+                    b.HasIndex("usersId");
+
+                    b.ToTable("filePaths");
                 });
 
             modelBuilder.Entity("_0sechill.Models.IssueManagement.Issues", b =>
@@ -210,11 +389,14 @@ namespace _0sechill.Migrations
                     b.Property<DateOnly>("createdDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("lastModifiedDate")
+                    b.Property<string>("feedback")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("privacy")
+                    b.Property<bool>("isPrivate")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly>("lastModifiedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("status")
                         .HasColumnType("TEXT");
@@ -462,6 +644,36 @@ namespace _0sechill.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("_0sechill.Hubs.Model.Message", b =>
+                {
+                    b.HasOne("_0sechill.Hubs.Model.Room", "Room")
+                        .WithMany("messages")
+                        .HasForeignKey("RoomID");
+
+                    b.HasOne("_0sechill.Models.ApplicationUser", "User")
+                        .WithMany("Messages")
+                        .HasForeignKey("userId");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_0sechill.Hubs.Model.UserConnection", b =>
+                {
+                    b.HasOne("_0sechill.Hubs.Model.Room", "Room")
+                        .WithMany("userConnections")
+                        .HasForeignKey("RoomID");
+
+                    b.HasOne("_0sechill.Models.ApplicationUser", "user")
+                        .WithMany("userConnections")
+                        .HasForeignKey("userId");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("user");
+                });
+
             modelBuilder.Entity("_0sechill.Models.Apartment", b =>
                 {
                     b.HasOne("_0sechill.Models.Block", "block")
@@ -473,15 +685,77 @@ namespace _0sechill.Migrations
                     b.Navigation("block");
                 });
 
-            modelBuilder.Entity("_0sechill.Models.IssueManagement.File", b =>
+            modelBuilder.Entity("_0sechill.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "issue")
-                        .WithMany("files")
-                        .HasForeignKey("issueId")
+                    b.HasOne("_0sechill.Models.Account.Department", "department")
+                        .WithMany("users")
+                        .HasForeignKey("departmentId");
+
+                    b.Navigation("department");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Block", b =>
+                {
+                    b.HasOne("_0sechill.Models.ApplicationUser", "blockManager")
+                        .WithOne("block")
+                        .HasForeignKey("_0sechill.Models.Block", "blockManagerId");
+
+                    b.Navigation("blockManager");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.AssignIssue", b =>
+                {
+                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "Issue")
+                        .WithOne("assignIssue")
+                        .HasForeignKey("_0sechill.Models.IssueManagement.AssignIssue", "issueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("issue");
+                    b.HasOne("_0sechill.Models.ApplicationUser", "staff")
+                        .WithMany("assignIssues")
+                        .HasForeignKey("staffId");
+
+                    b.Navigation("Issue");
+
+                    b.Navigation("staff");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.Comments", b =>
+                {
+                    b.HasOne("_0sechill.Models.ApplicationUser", "authors")
+                        .WithMany("comments")
+                        .HasForeignKey("authorsId");
+
+                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "issues")
+                        .WithMany("comments")
+                        .HasForeignKey("issuesID");
+
+                    b.Navigation("authors");
+
+                    b.Navigation("issues");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.FilePath", b =>
+                {
+                    b.HasOne("_0sechill.Models.IssueManagement.AssignIssue", "assignIssue")
+                        .WithMany("files")
+                        .HasForeignKey("assignIssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "issues")
+                        .WithMany("files")
+                        .HasForeignKey("issuesID");
+
+                    b.HasOne("_0sechill.Models.ApplicationUser", "users")
+                        .WithMany()
+                        .HasForeignKey("usersId");
+
+                    b.Navigation("assignIssue");
+
+                    b.Navigation("issues");
+
+                    b.Navigation("users");
                 });
 
             modelBuilder.Entity("_0sechill.Models.IssueManagement.Issues", b =>
@@ -584,6 +858,18 @@ namespace _0sechill.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("_0sechill.Hubs.Model.Room", b =>
+                {
+                    b.Navigation("messages");
+
+                    b.Navigation("userConnections");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.Account.Department", b =>
+                {
+                    b.Navigation("users");
+                });
+
             modelBuilder.Entity("_0sechill.Models.Apartment", b =>
                 {
                     b.Navigation("userHistories");
@@ -591,7 +877,17 @@ namespace _0sechill.Migrations
 
             modelBuilder.Entity("_0sechill.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("Messages");
+
+                    b.Navigation("assignIssues");
+
+                    b.Navigation("block");
+
+                    b.Navigation("comments");
+
                     b.Navigation("issues");
+
+                    b.Navigation("userConnections");
 
                     b.Navigation("userHistories");
                 });
@@ -601,6 +897,11 @@ namespace _0sechill.Migrations
                     b.Navigation("apartments");
                 });
 
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.AssignIssue", b =>
+                {
+                    b.Navigation("files");
+                });
+
             modelBuilder.Entity("_0sechill.Models.IssueManagement.Category", b =>
                 {
                     b.Navigation("Issues");
@@ -608,6 +909,10 @@ namespace _0sechill.Migrations
 
             modelBuilder.Entity("_0sechill.Models.IssueManagement.Issues", b =>
                 {
+                    b.Navigation("assignIssue");
+
+                    b.Navigation("comments");
+
                     b.Navigation("files");
                 });
 #pragma warning restore 612, 618
