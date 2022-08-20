@@ -11,7 +11,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
 {
-    [Authorize]
     public class ChatHub : Hub
     {
         private readonly ApiDbContext context;
@@ -29,9 +28,8 @@ namespace _0sechill.Hubs
         }
 
         [HubMethodName("SendMessageToUser")]
-        public async Task SendMessageToUser([Required] string receiverId, [Required] string message)
+        public async Task SendMessageToUser([Required] string receiverId, [Required] string message, [Required] string token)
         {
-            var token = Context.GetHttpContext().Request.Headers.Authorization;
             var sender = await tokenService.DecodeToken(token);
 
             var receiver = await userManager.FindByIdAsync(receiverId);
