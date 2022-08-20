@@ -4,6 +4,10 @@ namespace _0sechill.Hubs.Model
 {
     public class Message
     {
+        public Message()
+        {
+            createdDateTime = DateTime.Now;
+        }
         #region Properties
 
         public Guid Id { get; set; }
