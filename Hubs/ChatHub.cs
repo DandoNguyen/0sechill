@@ -54,6 +54,8 @@ namespace _0sechill.Hubs
             await base.OnConnectedAsync();
         }
 
+        public string GetConnectionId() => Context.ConnectionId;
+
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var token = Context.GetHttpContext().Request.Headers.Authorization;
