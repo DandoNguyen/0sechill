@@ -32,27 +32,24 @@ namespace _0sechill.Hubs
         {
             var sender = await tokenService.DecodeToken(token);
 
-            var receiver = await userManager.FindByIdAsync(receiverId);
-
             //Try find exist Room
-            var existRoom = await FindExistRoomAsync(sender.Id, receiverId);
-            if (!string.IsNullOrEmpty(existRoom))
+            var existRoomId = await FindExistRoomAsync(sender.Id, receiverId, isGroupChat: false);
+            if (!string.IsNullOrEmpty(existRoomId))
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, existRoom);
-                await SendMessageAsync(sender.UserName, message, existRoom);
+                await Groups.AddToGroupAsync(Context.ConnectionId, existRoomId);
+                await SendMessageAsync(sender.UserName, message, existRoomId);
             }
             //Create new Room when exist Room is null
             else
             {
                 var newRoom = new Room();
-                newRoom.roomName = sender.Id + receiver.Id;
                 newRoom.isGroupChat = false;
                 await context.chatRooms.AddAsync(newRoom);
                 await context.SaveChangesAsync();
                 await RecordMessagesAsync(sender, message, newRoom);
 
-                await Groups.AddToGroupAsync(Context.ConnectionId, newRoom.roomName);
-                await SendMessageAsync(sender.UserName, message, newRoom.roomName);
+                await Groups.AddToGroupAsync(Context.ConnectionId, newRoom.ID.ToString());
+                await SendMessageAsync(sender.UserName, message, newRoom.ID.ToString());
             }
         }
             
@@ -69,19 +66,19 @@ namespace _0sechill.Hubs
             await context.SaveChangesAsync();
         }
 
-        private async Task<string> FindExistRoomAsync(string senderId, string receiverId)
+        private async Task<string> FindExistRoomAsync(string senderId, string receiverId, bool isGroupChat)
         {
-            var listRooms = context.chatRooms.AsQueryable();
-            var room = await listRooms
-                .Where(x => x.roomName.Equals(senderId + receiverId))
-                .FirstOrDefaultAsync();
-            if (room is null)
+            var listRooms = await context.chatRooms
+                .Where(x => x.users.Any(y => y.Id.Equals(senderId)) && x.users.Any(y => y.Id.Equals(receiverId)))
+                .ToListAsync();
+            foreach (var room in listRooms)
             {
-                room = await listRooms
-                    .Where(x => x.roomName.Equals(receiverId + senderId))
-                    .FirstOrDefaultAsync();
+                if (room.isGroupChat.Equals(isGroupChat))
+                {
+                    return room.ID.ToString();
+                }
             }
-            return room.roomName;
+            return null;
         }
 
         [HubMethodName("SendMessage")]

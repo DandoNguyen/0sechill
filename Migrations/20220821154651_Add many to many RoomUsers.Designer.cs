@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _0sechill.Data;
 
@@ -10,9 +11,10 @@ using _0sechill.Data;
 namespace _0sechill.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220821154651_Add many to many RoomUsers")]
+    partial class AddmanytomanyRoomUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
@@ -52,6 +54,9 @@ namespace _0sechill.Migrations
 
                     b.Property<bool>("isGroupChat")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("roomName")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ID");
 
