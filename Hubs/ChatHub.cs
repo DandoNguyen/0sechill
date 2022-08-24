@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
 {
-    public class ChatHub : Hub
+    public class ChatHub : Hub<IHubClient>
     {
         private readonly ApiDbContext context;
         private readonly UserManager<ApplicationUser> userManager;
@@ -152,17 +152,17 @@ namespace _0sechill.Hubs
             {
                 if (!string.IsNullOrEmpty(room.roomName))
                 {
-                    await Clients.Group(room.roomName).SendAsync("", sender, message);
+                    await Clients.Group(room.roomName).Chat(sender.UserName, message);
 
                 }
                 else
                 {
-                    await Clients.All.SendAsync("", sender, message);
+                    await Clients.All.Chat(sender.UserName, message);
                 }
             }
             catch (Exception ex)
             {
-                await Clients.All.SendAsync("", ex);
+                await Clients.All.Chat("System Exception", ex.Message);
             }
         }
     }

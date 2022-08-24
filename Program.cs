@@ -50,7 +50,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true
     };
 
-    //Documentation Guide from Microsoft: https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-6.0&viewFallbackFrom=aspnetcore-2.2
+    // Documentation Guide from Microsoft:
+    // https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-6.0&viewFallbackFrom=aspnetcore-2.2
 
     // We have to hook the OnMessageReceived event in order to
     // allow the JWT authentication handler to read the access
@@ -72,7 +73,7 @@ builder.Services.AddAuthentication(options =>
             // If the request is for our hub...
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/hubs/chat")))
+                (path.StartsWithSegments("/chathub")))
             {
                 // Read the token out of the query string
                 context.Token = accessToken;
