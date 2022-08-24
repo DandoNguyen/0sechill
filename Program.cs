@@ -26,6 +26,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApiDbContext>()
 .AddDefaultTokenProviders();
 
+//Enable authentication and authorization
+builder.Services.AddAuthorization();
 // For Jwt
 builder.Services.AddAuthentication(options =>
 {
@@ -47,6 +49,37 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = false, //In development this should be true
         ValidateIssuerSigningKey = true
     };
+
+    //Documentation Guide from Microsoft: https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-6.0&viewFallbackFrom=aspnetcore-2.2
+
+    // We have to hook the OnMessageReceived event in order to
+    // allow the JWT authentication handler to read the access
+    // token from the query string when a WebSocket or 
+    // Server-Sent Events request comes in.
+
+    // Sending the access token in the query string is required due to
+    // a limitation in Browser APIs. We restrict it to only calls to the
+    // SignalR hub in this code.
+    // See https://docs.microsoft.com/aspnet/core/signalr/security#access-token-logging
+    // for more information about security considerations when using
+    // the query string to transmit the access token.
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["Authorization"];
+
+            // If the request is for our hub...
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/hubs/chat")))
+            {
+                // Read the token out of the query string
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 //Add CORS
@@ -60,10 +93,6 @@ builder.Services.AddCors(options =>
         //builder.SetIsOriginAllowed(origin => true);
     });
 });
-
-//Enable authentication and authorization
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
 
 //Add SignalR Services
 builder.Services.AddSignalR();

@@ -30,17 +30,15 @@ namespace _0sechill.Hubs
         /// <summary>
         /// Represent the method sending message to a group of user
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="Authorization"></param>
         /// <param name="message"></param>
         /// <param name="roomId"></param>
         /// <returns></returns>
         [HubMethodName("SendMessageToGroup")]
-        public async Task SendMessageToGroupAsync(string token, string message, string roomId)
+        public async Task SendMessageToGroupAsync(string Authorization, string message, string roomId)
         {
-            var user = await tokenService.DecodeTokenAsync(token);
+            var user = await tokenService.DecodeTokenAsync(Authorization);
             var existRoom = await context.chatRooms.FindAsync(roomId);
-
-            //Add other user's connection ID to this room
 
             await SendMessageAsync(user, message, existRoom);
         }
@@ -48,13 +46,13 @@ namespace _0sechill.Hubs
         /// <summary>
         /// represent the method connecting to group chat
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="Authorization"></param>
         /// <param name="roomId"></param>
         /// <returns></returns>
         [HubMethodName("ConnectToGroupChat")]
-        public async Task ConnectToGroupChat(string token, string roomId)
+        public async Task ConnectToGroupChat(string Authorization, string roomId)
         {
-            var user = await tokenService.DecodeTokenAsync(token);
+            var user = await tokenService.DecodeTokenAsync(Authorization);
             var existRoom = await context.chatRooms.FindAsync(roomId);
             await Groups.AddToGroupAsync(Context.ConnectionId, existRoom.roomName);
         }
@@ -64,12 +62,12 @@ namespace _0sechill.Hubs
         /// </summary>
         /// <param name="receiverId"></param>
         /// <param name="message"></param>
-        /// <param name="token"></param>
+        /// <param name="Authorization"></param>
         /// <returns></returns>
         [HubMethodName("SendMessageToUser")]
-        public async Task SendMessageToUser([Required] string receiverId, [Required] string message, [Required] string token)
+        public async Task SendMessageToUser([Required] string receiverId, [Required] string message, [Required] string Authorization)
         {
-            var sender = await tokenService.DecodeTokenAsync(token);
+            var sender = await tokenService.DecodeTokenAsync(Authorization);
 
             //Try find exist Room
             var existRoom = await FindExistRoomAsync(sender.Id, receiverId);
