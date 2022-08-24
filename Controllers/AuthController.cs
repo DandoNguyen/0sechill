@@ -140,7 +140,7 @@ namespace _0sechill.Controllers
         [Authorize]
         public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
         {
-            var user = await tokenService.DecodeToken(Authorization);
+            var user = await tokenService.DecodeTokenAsync(Authorization);
             if (user is null)
                 return BadRequest("Token in valid");
 

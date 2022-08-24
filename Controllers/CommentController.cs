@@ -72,7 +72,7 @@ namespace _0sechill.Controllers
                 return Unauthorized();
             }
 
-            var author = await tokenService.DecodeToken(Authorization);
+            var author = await tokenService.DecodeTokenAsync(Authorization);
 
             var newComment = new Comments();
             if (dto.isChild)
@@ -150,7 +150,7 @@ namespace _0sechill.Controllers
                     context.comments.RemoveRange(listChildComment);
             }
 
-            var loggedUser = tokenService.DecodeToken(Authorization);
+            var loggedUser = tokenService.DecodeTokenAsync(Authorization);
             if (!loggedUser.Id.Equals(existComment.authors.Id))
             {
                 return Unauthorized("Only Author can delete this comment");

@@ -11,6 +11,8 @@ namespace _0sechill.Hubs.Model
         }
         public Guid ID { get; set; }
         public bool isGroupChat { get; set; }
+        public string roomName { get; set; }
+        public string groupAdmin { get; set; }
         public ICollection<ApplicationUser> users { get; set; }
         public ICollection<Message> messages { get; set; }
     }

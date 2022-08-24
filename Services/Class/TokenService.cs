@@ -22,7 +22,7 @@ namespace _0sechill.Services.Class
             this.roleManager = roleManager;
             this.configuration = configuration;
         }
-        public async Task<ApplicationUser> DecodeToken(string Authorization)
+        public async Task<ApplicationUser> DecodeTokenAsync(string Authorization)
         {
             if (Authorization is null)
             {

@@ -5,7 +5,7 @@ namespace _0sechill.Services
 {
     public interface ITokenService
     {
-        Task<ApplicationUser> DecodeToken(string token);
+        Task<ApplicationUser> DecodeTokenAsync(string token);
         Task<string> GenerateJwtToken(ApplicationUser user);
     }
 }

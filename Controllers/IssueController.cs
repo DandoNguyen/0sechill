@@ -192,7 +192,7 @@ namespace _0sechill.Controllers
             {
                 var listFileError = new List<string>();
                 //Decode Token for Author
-                var author = await tokenService.DecodeToken(Authorization);
+                var author = await tokenService.DecodeTokenAsync(Authorization);
                 if (author is null)
                 {
                     return BadRequest("Authorization Is Invalid!");
