@@ -8,8 +8,6 @@ namespace _0sechill.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        [Key]
-        public Guid userId { get; set; }
         public string userCode { get; set; } 
         public string firstName { get; set; }
         public string lastName { get; set; }
