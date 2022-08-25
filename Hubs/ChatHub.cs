@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub<IHubClient>
     {
         private readonly ApiDbContext context;
