@@ -6,6 +6,7 @@ using _0sechill.Services.Class;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -113,6 +114,7 @@ builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IFileHandlingService, FileHandlingService>();
 builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddSingleton<IUserIdProvider, INameUserIdProvider>();
 
 builder.Services.AddControllers();
 
