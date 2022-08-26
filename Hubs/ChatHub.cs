@@ -69,8 +69,13 @@ namespace _0sechill.Hubs
         [HubMethodName("SendMessageToUser")]
         public async Task SendMessageToUser([Required] string receiverId, [Required] string message)
         {
-            var senderEmail = Context.User.Claims.Where(x => x.Type.Equals("email")).Select(x => x.Value).FirstOrDefault();
-            var sender = await userManager.FindByEmailAsync(senderEmail);
+            var senderId = Context.User.Identity.Name;
+            var sender = await userManager.FindByIdAsync(senderId);
+            if (sender is null)
+            {
+                await Clients.All.Chat("error", "sender is null");
+                return;
+            }
 
             //Try find exist Room
             var existRoom = await FindExistRoomAsync(sender.Id, receiverId);
