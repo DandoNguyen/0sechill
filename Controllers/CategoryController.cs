@@ -4,6 +4,8 @@ using _0sechill.Dto.Cate.Response;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Models.IssueManagement;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CategoryController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -28,6 +31,10 @@ namespace _0sechill.Controllers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// getting a list of available categories
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Route("GetAllCate")]
         public async Task<IActionResult> GetAllCate()
         {
@@ -46,6 +53,11 @@ namespace _0sechill.Controllers
             return Ok(listCateDto);
         } 
 
+        /// <summary>
+        /// Getting a list of avalable issues in specific category
+        /// </summary>
+        /// <param name="cateId"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetAllIssue")]
         public async Task<IActionResult> GetAllIssueInCateAsync(string cateId)
         {
@@ -73,6 +85,11 @@ namespace _0sechill.Controllers
             return Ok(listIssueDto);
         }
 
+        /// <summary>
+        /// creating new category
+        /// </summary>
+        /// <param name="cateName"></param>
+        /// <returns></returns>
         [HttpPost, Route("CreateCate")]
         public async Task<IActionResult> CreateCateAsync(string cateName)
         {
@@ -98,6 +115,11 @@ namespace _0sechill.Controllers
             return BadRequest("Invalid Payload");
         }
 
+        /// <summary>
+        /// editing existing category
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPut, Route("EditCategory")]
         public async Task<IActionResult> EditCateAsync([FromBody] EditCateDto dto)
         {

@@ -8,6 +8,7 @@ using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
 using _0sechill.Static;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ namespace _0sechill.Controllers
     [Route("api/[controller]")]
     [ValidateAntiForgeryToken]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class IssueController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -58,7 +59,11 @@ namespace _0sechill.Controllers
         //    var username = await DecodeToken(Authorization);
         //}
 
-        //Add search func for issue
+        /// <summary>
+        /// searching for issue based on filter options
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost, Route("SearchIssue")]
         public async Task<IActionResult> FilterIssueAsync(SearchIssueParamsDto dto)
         {
@@ -105,6 +110,10 @@ namespace _0sechill.Controllers
             }
         }
 
+        /// <summary>
+        /// getting a list of available issues
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Route("GetAllIssue")]
         public async Task<IActionResult> GetAllIssueAsync()
         {
@@ -137,6 +146,12 @@ namespace _0sechill.Controllers
             return Ok(listIssueDto);
         }
 
+        /// <summary>
+        /// giving feedback to pending issue
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "staff")]
         [HttpPost, Route("GiveFeedback")]
         public async Task<IActionResult> GiveFeedbackAsync(IssueReviewResultDto dto)
         {
@@ -161,7 +176,12 @@ namespace _0sechill.Controllers
             return Ok("FeedBack Received");
         }
 
+        /// <summary>
+        /// get a list of available pending issue
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Route("GetAllPending")]
+        [Authorize(Roles = "staff")]
         public async Task<IActionResult> GetAllPendingIssuesAsync()
         {
             var listIssuePending = await context.issues

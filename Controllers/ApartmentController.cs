@@ -3,6 +3,8 @@ using _0sechill.Dto.Apartment.Request;
 using _0sechill.Dto.Apartment.Response;
 using _0sechill.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ApartmentController : ControllerBase
     {
         private readonly ApiDbContext context;

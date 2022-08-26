@@ -5,6 +5,7 @@ using _0sechill.Models;
 using _0sechill.Models.Account;
 using _0sechill.Static;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,7 +17,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class DepartmentController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -33,6 +34,10 @@ namespace _0sechill.Controllers
             this.userManager = userManager;
         }
 
+        /// <summary>
+        /// getting a list of available departments
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Route("GetAllDepartment")]
         public async Task<IActionResult> GetAllDeptAsync()
         {
@@ -42,6 +47,11 @@ namespace _0sechill.Controllers
             return Ok(listDepartment);
         }
 
+        /// <summary>
+        /// creating new department
+        /// </summary>
+        /// <param name="departmentName"></param>
+        /// <returns></returns>
         [HttpPost, Route("CreateDept")]
         public async Task<IActionResult> CreateDeptpartment([FromBody] string departmentName)
         {
@@ -57,7 +67,11 @@ namespace _0sechill.Controllers
             return BadRequest("Error in adding new department");
         }
 
-        //Assign user to dept
+        /// <summary>
+        /// assigning new staff to a specific department
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost, Route("AssignUserToDept")]
         public async Task<IActionResult> AssignUserAsync(UserIdDeptIdDto dto)
         {
@@ -85,7 +99,11 @@ namespace _0sechill.Controllers
             return BadRequest($"User {existUser.UserName} does not have valid Role");
         }
 
-        //Get all user in department 
+        /// <summary>
+        /// getting list of available users in a specific department
+        /// </summary>
+        /// <param name="departmentId"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetUsersInDept")]
         public async Task<IActionResult> GetAllUserDeptAsync([FromBody] [Required] string departmentId) 
         {

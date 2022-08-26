@@ -1,5 +1,7 @@
 ﻿using _0sechill.Data;
 using _0sechill.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FileHandlingController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -21,7 +24,11 @@ namespace _0sechill.Controllers
             this.fileService = fileService;
         }
 
-        //Get files using file path
+        /// <summary>
+        /// private function save file to directory
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private async Task<IActionResult> CopyFileFromDirectoryAsync(string filePath)
         {
             if (!System.IO.File.Exists(filePath))
@@ -47,7 +54,11 @@ namespace _0sechill.Controllers
             }
         }
 
-        //public func get file paths
+        /// <summary>
+        /// getting existing file
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetFile")]
         public async Task<IActionResult> GetFileAsync(string fileId)
         {
@@ -62,7 +73,11 @@ namespace _0sechill.Controllers
             return await CopyFileFromDirectoryAsync(filePathString);
         }
 
-        //remove files using file id without remove the owner object
+        /// <summary>
+        /// deleting file from directory
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <returns></returns>
         [HttpDelete, Route("DeleteFiles")]
         public async Task<IActionResult> RemoveFilesAsync(string fileId)
         {
@@ -85,6 +100,11 @@ namespace _0sechill.Controllers
             }
         }
 
+        /// <summary>
+        /// private function getting the type of file => see the references
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private string GetContentType(string filePath)
         {
             var provider = new FileExtensionContentTypeProvider();

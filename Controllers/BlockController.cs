@@ -14,6 +14,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class BlockController : ControllerBase
     {
         private readonly IExcelService excelService;
@@ -36,8 +37,13 @@ namespace _0sechill.Controllers
             this.mapper = mapper;
         }
 
+        /// <summary>
+        /// represent the method allow admin to assign a staff to be a block's manager
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost, Route("AssignBlockManager")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> AssignBlockManager([FromBody] BlockManagerDto dto)
         {
             var existBlock = await context.blocks.FirstOrDefaultAsync(x => x.blockId.Equals(Guid.Parse(dto.blockId)));
@@ -51,6 +57,10 @@ namespace _0sechill.Controllers
             return Ok($"User {existUser.UserName} has been assign to Block {existBlock.blockName}");
         }
 
+        /// <summary>
+        /// represent the method getting a list of existing block in the system
+        /// </summary>
+        /// <returns></returns>
         [HttpGet, Route("GetAllBlock")]
         public async Task<IActionResult> GetAllBlockAsync()
         {
@@ -69,6 +79,11 @@ namespace _0sechill.Controllers
             return Ok(listBlockDto);
         }
 
+        /// <summary>
+        /// represent the method adding new block to the system
+        /// </summary>
+        /// <param name="blockName"></param>
+        /// <returns></returns>
         [HttpPost, Route("AddBlock")]
         public async Task<IActionResult> AddBlockAsync(string blockName)
         {
@@ -95,6 +110,12 @@ namespace _0sechill.Controllers
             return BadRequest("Model State is not valid");
         }
 
+        /// <summary>
+        /// represent the method imporing apartments in th block
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
         [HttpPost, Route("ImportApartment")]
         public async Task<IActionResult> ImportApartmentAsync([FromForm] string blockId, IFormFile formFile)
         {
@@ -129,6 +150,11 @@ namespace _0sechill.Controllers
             }
         }
 
+        /// <summary>
+        /// represent the method getting block details
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetBlock")]
         public async Task<IActionResult> GetBlockAsync(string blockId)
         {
@@ -143,7 +169,14 @@ namespace _0sechill.Controllers
             return Ok(blockDto);
         }
 
+        /// <summary>
+        /// editting block details
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <param name="blockName"></param>
+        /// <returns></returns>
         [HttpPut, Route("EditBlock")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> EditBlockAsync(string blockId, string blockName)
         {
             if (blockId is null)
@@ -164,7 +197,13 @@ namespace _0sechill.Controllers
             return Ok("Block Updated Success!");
         }
 
+        /// <summary>
+        /// deleting exist block
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
         [HttpDelete, Route("DeleteBlock")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteBlockAsync(string blockId)
         {
             if (blockId is null)
@@ -191,6 +230,11 @@ namespace _0sechill.Controllers
             }
         }
 
+        /// <summary>
+        /// private function check the constraint key for apartment => see the references
+        /// </summary>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
         private async Task<bool> IsApartmentKeyConstraintAsync(string blockId)
         {
             var listExistingApartment = await context.apartments
@@ -203,8 +247,14 @@ namespace _0sechill.Controllers
             return false;
         }
 
+        /// <summary>
+        /// imporing excel file into the system for large amount of records to be process
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("ImportExcel")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> ImportExcelAsync(IFormFile formFile)
         {
             if (formFile is null)
@@ -274,6 +324,12 @@ namespace _0sechill.Controllers
             }
         }
 
+        /// <summary>
+        /// private function adding new apartment manually => see the references
+        /// </summary>
+        /// <param name="listApartment"></param>
+        /// <param name="blockId"></param>
+        /// <returns></returns>
         private async Task AddApartmentAsync(List<Apartment> listApartment, Guid blockId)
         {
             var listExistingApartment = await context.apartments

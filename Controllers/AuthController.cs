@@ -6,6 +6,7 @@ using _0sechill.Models.Dto.UserDto.Request;
 using _0sechill.Services;
 using _0sechill.Static;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -37,8 +38,13 @@ namespace _0sechill.Controllers
             this.mapper = mapper;
         }
 
+        /// <summary>
+        /// represent the method creating staff account for the admin user
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost, Route("CreateStaffAccount")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CreateAccountAsync(CreateStaffAccountDto dto)
         {
             if (ModelState.IsValid)
@@ -85,6 +91,11 @@ namespace _0sechill.Controllers
             });
         }
 
+        /// <summary>
+        /// represent the method register new account
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("Register")]
         [AllowAnonymous]
@@ -136,8 +147,13 @@ namespace _0sechill.Controllers
             });
         }
 
+        /// <summary>
+        /// represent the method getting profile details from login user
+        /// </summary>
+        /// <param name="Authorization"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetProfile")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
         {
             var user = await tokenService.DecodeTokenAsync(Authorization);
@@ -158,6 +174,11 @@ namespace _0sechill.Controllers
             { StatusCode = 200 };
         }
 
+        /// <summary>
+        /// represent the method login 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("Login")]
         [AllowAnonymous]
