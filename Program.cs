@@ -27,7 +27,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 //Enable authentication and authorization
-builder.Services.AddAuthorization();
 // For Jwt
 builder.Services.AddAuthentication(options =>
 {
@@ -68,7 +67,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            var accessToken = context.Request.Query["Authorization"];
+            var accessToken = context.Request.Query["access_token"];
 
             // If the request is for our hub...
             var path = context.HttpContext.Request.Path;
@@ -82,6 +81,7 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+builder.Services.AddAuthorization();
 
 //Add CORS
 var devCorsPolicy = "devCorsPolicy";
