@@ -3,6 +3,8 @@ using _0sechill.Hubs.Dto;
 using _0sechill.Hubs.Model;
 using _0sechill.Models;
 using _0sechill.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChatHub : Hub<IHubClient>
     {
         private readonly ApiDbContext context;
