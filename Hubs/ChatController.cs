@@ -5,6 +5,7 @@ using _0sechill.Hubs.Model;
 using _0sechill.Models;
 using _0sechill.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,7 +17,7 @@ namespace _0sechill.Hubs
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChatController : ControllerBase
     {
         private readonly ApiDbContext context;
