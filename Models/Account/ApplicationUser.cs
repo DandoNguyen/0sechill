@@ -13,6 +13,7 @@ namespace _0sechill.Models
         public string lastName { get; set; }
         public DateTime DOB { get; set; }
         public string role { get; set; }
+        public string currentHubConnectionId { get; set; }
 
         //Refresh Token
         public string Token { get; set; }

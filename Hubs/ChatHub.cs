@@ -30,6 +30,80 @@ namespace _0sechill.Hubs
         }
 
         /// <summary>
+        /// this is the method connect the user with the current connection id
+        /// </summary>
+        /// <returns></returns>
+        public override async Task<Task> OnConnectedAsync()
+        {
+            var userId = Context.User.Identity.Name;
+            string currentConnectionId = Context.ConnectionId;
+
+            var user = await userManager.FindByIdAsync(userId);
+            user.currentHubConnectionId = currentConnectionId;
+            await userManager.UpdateAsync(user);
+            await context.SaveChangesAsync();
+            await LoadUnseenNotificationAsync(userId);
+            return base.OnConnectedAsync();
+        }
+
+        /// <summary>
+        /// this is the method that disconnected the user and remove the connectionId
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        public override async Task<Task> OnDisconnectedAsync(Exception exception)
+        {
+            var user = await userManager.FindByIdAsync(Context.User.Identity.Name);
+            user.currentHubConnectionId = null;
+            await userManager.UpdateAsync(user);
+
+            await Clients.User(user.Id).Chat("System", "Hub Disconnected!");
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        /// <summary>
+        /// this is the method that send notification to a specific user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="notifications"></param>
+        /// <returns></returns>
+        public async Task SendNotificationToUser(string userId, Notifications notifications)
+        {
+            var existNotif = await context.notifications.Where(x => x.ID.Equals(notifications.ID)).FirstOrDefaultAsync();
+            if (existNotif is null)
+            {
+                await context.notifications.AddAsync(notifications);
+                await context.SaveChangesAsync();
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (!string.IsNullOrEmpty(user.currentHubConnectionId))
+            {
+                await Clients.Client(user.currentHubConnectionId).Notify(notifications.title, notifications.content);
+            }
+        }
+
+        /// <summary>
+        /// this is the method to load any unread notification of logged in user on hub connection events
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        private async Task LoadUnseenNotificationAsync(string userId)
+        {
+            var listNotif = await context.notifications
+                .Where(x => x.receiverId.Equals(userId))
+                .Where(x => x.isSeen.Equals(false))
+                .ToListAsync();
+            if (!listNotif.Count.Equals(0))
+            {
+                foreach (var notif in listNotif)
+                {
+                    await SendNotificationToUser(userId, notif);
+                }
+            }
+        }
+
+        /// <summary>
         /// Represent the method sending message to a group of user
         /// </summary>
         /// <param name="Authorization"></param>

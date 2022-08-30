@@ -116,7 +116,7 @@ namespace _0sechill.Controllers
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
-                newUser.role = UserRole.Citizen;
+                newUser.role = UserRole.Citizen.ToString();
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
@@ -154,11 +154,13 @@ namespace _0sechill.Controllers
         /// <returns></returns>
         [HttpGet, Route("GetProfile")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
+        public async Task<IActionResult> GetProfileAsync()
         {
-            var user = await tokenService.DecodeTokenAsync(Authorization);
+            var user = await tokenService.DecodeTokenAsync(User.Claims
+                .Where(x => x.Type.Equals("Id"))
+                .Select(x => x.Value).FirstOrDefault());
             if (user is null)
-                return BadRequest("Token in valid");
+                return BadRequest("Token invalid");
 
             var ListRole = new List<string>();
             foreach (var role in user.role)
