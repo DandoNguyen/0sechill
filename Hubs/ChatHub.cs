@@ -13,7 +13,7 @@ using System.ComponentModel.DataAnnotations;
 namespace _0sechill.Hubs
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class ChatHub : Hub<IHubClient>
+    public class ChatHub : Hub<IHubClient>, IChatHub
     {
         private readonly ApiDbContext context;
         private readonly UserManager<ApplicationUser> userManager;
@@ -65,22 +65,29 @@ namespace _0sechill.Hubs
         /// this is the method that send notification to a specific user
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="notifications"></param>
+        /// <param name="notif"></param>
         /// <returns></returns>
-        public async Task SendNotificationToUser(string userId, Notifications notifications)
+        public async Task SendNotificationToUser(string userId, Notifications notif)
         {
-            var existNotif = await context.notifications.Where(x => x.ID.Equals(notifications.ID)).FirstOrDefaultAsync();
+            var existNotif = await context.notifications.Where(x => x.ID.Equals(notif.ID)).FirstOrDefaultAsync();
             if (existNotif is null)
             {
-                await context.notifications.AddAsync(notifications);
-                await context.SaveChangesAsync();
+                existNotif.receiverId = userId;
+                await context.notifications.AddAsync(notif);
+            }
+            else if (string.IsNullOrEmpty(existNotif.receiverId))
+            {
+                existNotif.receiverId = userId;
+                context.notifications.Update(existNotif);
             }
 
             var user = await userManager.FindByIdAsync(userId);
             if (!string.IsNullOrEmpty(user.currentHubConnectionId))
             {
-                await Clients.Client(user.currentHubConnectionId).Notify(notifications.title, notifications.content);
+                await Clients.Client(user.currentHubConnectionId).Notify(notif.ID.ToString(), notif.title, notif.content);
             }
+
+            await context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -100,6 +107,24 @@ namespace _0sechill.Hubs
                 {
                     await SendNotificationToUser(userId, notif);
                 }
+            }
+        }
+
+        /// <summary>
+        /// this is the method that check if the user has seen the notification
+        /// </summary>
+        /// <param name="notifId"></param>
+        /// <param name="isSeen"></param>
+        /// <returns></returns>
+        [HubMethodName("NotificationSeen")]
+        public async Task NotificationSeenAsync(string notifId, bool isSeen)
+        {
+            var existNotif = await context.notifications.FindAsync(Guid.Parse(notifId));
+            if (existNotif is not null)
+            {
+                existNotif.isSeen = isSeen;
+                context.notifications.Update(existNotif);
+                await context.SaveChangesAsync();
             }
         }
 
