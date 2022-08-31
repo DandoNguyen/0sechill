@@ -7,11 +7,13 @@ namespace _0sechill.Hubs.Model
         public Message()
         {
             createdDateTime = DateTime.Now;
+            isSeen = false;
         }
         #region Properties
 
         public Guid Id { get; set; }
         public string message { get; set; }
+        public bool isSeen { get; set; }
 
         #endregion
 

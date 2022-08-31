@@ -35,7 +35,7 @@ namespace _0sechill.Hubs
         /// <returns></returns>
         public override async Task<Task> OnConnectedAsync()
         {
-            var userId = Context.User.Identity.Name;
+            var userId = Context.UserIdentifier;
             string currentConnectionId = Context.ConnectionId;
 
             var user = await userManager.FindByIdAsync(userId);
@@ -53,11 +53,10 @@ namespace _0sechill.Hubs
         /// <returns></returns>
         public override async Task<Task> OnDisconnectedAsync(Exception exception)
         {
-            var user = await userManager.FindByIdAsync(Context.User.Identity.Name);
+            var user = await userManager.FindByIdAsync(Context.UserIdentifier);
             user.currentHubConnectionId = null;
             await userManager.UpdateAsync(user);
-
-            await Clients.User(user.Id).Chat("System", "Hub Disconnected!");
+                        
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -114,49 +113,20 @@ namespace _0sechill.Hubs
         /// this is the method that check if the user has seen the notification
         /// </summary>
         /// <param name="notifId"></param>
-        /// <param name="isSeen"></param>
         /// <returns></returns>
         [HubMethodName("NotificationSeen")]
-        public async Task NotificationSeenAsync(string notifId, bool isSeen)
+        public async Task NotificationSeenAsync(string notifId)
         {
             var existNotif = await context.notifications.FindAsync(Guid.Parse(notifId));
             if (existNotif is not null)
             {
-                existNotif.isSeen = isSeen;
+                existNotif.isSeen = true;
                 context.notifications.Update(existNotif);
                 await context.SaveChangesAsync();
             }
         }
 
-        /// <summary>
-        /// Represent the method sending message to a group of user
-        /// </summary>
-        /// <param name="Authorization"></param>
-        /// <param name="message"></param>
-        /// <param name="roomId"></param>
-        /// <returns></returns>
-        [HubMethodName("SendMessageToGroup")]
-        public async Task SendMessageToGroupAsync(string Authorization, string message, string roomId)
-        {
-            var user = await tokenService.DecodeTokenAsync(Authorization);
-            var existRoom = await context.chatRooms.FindAsync(roomId);
-
-            await SendMessageAsync(user, message, existRoom);
-        }
-
-        /// <summary>
-        /// represent the method connecting to group chat
-        /// </summary>
-        /// <param name="Authorization"></param>
-        /// <param name="roomId"></param>
-        /// <returns></returns>
-        [HubMethodName("ConnectToGroupChat")]
-        public async Task ConnectToGroupChat(string Authorization, string roomId)
-        {
-            var user = await tokenService.DecodeTokenAsync(Authorization);
-            var existRoom = await context.chatRooms.FindAsync(roomId);
-            await Groups.AddToGroupAsync(Context.ConnectionId, existRoom.roomName);
-        }
+        
 
         /// <summary>
         /// Represent the method sending message to a single user
@@ -168,20 +138,14 @@ namespace _0sechill.Hubs
         [HubMethodName("SendMessageToUser")]
         public async Task SendMessageToUser([Required] string receiverId, [Required] string message)
         {
-            var senderId = Context.User.Identity.Name;
-            var sender = await userManager.FindByIdAsync(senderId);
-            if (sender is null)
-            {
-                await Clients.All.Chat("error", "sender is null");
-                return;
-            }
+            var senderId = Context.UserIdentifier;
 
             //Try find exist Room
-            var existRoom = await FindExistRoomAsync(sender.Id, receiverId);
+            var existRoom = await FindExistRoomAsync(senderId, receiverId);
             if (existRoom is not null)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, existRoom.ID.ToString());
-                await SendMessageAsync(sender, message, existRoom);
+                await SendMessageAsync(senderId, message, existRoom);
             }
             //Create new Room when exist Room is null
             else
@@ -192,7 +156,7 @@ namespace _0sechill.Hubs
                 await context.SaveChangesAsync();
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, newRoom.ID.ToString());
-                await SendMessageAsync(sender, message, newRoom);
+                await SendMessageAsync(senderId, message, newRoom);
             }
         }
         
@@ -203,12 +167,14 @@ namespace _0sechill.Hubs
         /// <param name="message"></param>
         /// <param name="room"></param>
         /// <returns></returns>
-        private async Task RecordMessagesAsync(ApplicationUser author, string message, Room room)
+        private async Task RecordMessagesAsync(string authorId, string message, Room room)
         {
+            var user = await userManager.FindByIdAsync(authorId);
+
             var newMessage = new Message();
             newMessage.message = message;
-            newMessage.userId = author.Id;
-            newMessage.User = author;
+            newMessage.userId = authorId;
+            newMessage.User = user;
             newMessage.roomId = room.ID;
             newMessage.Room = room;
 
@@ -225,10 +191,14 @@ namespace _0sechill.Hubs
         private async Task<Room> FindExistRoomAsync(string senderId, string receiverId)
         {
             var userFirst = await userManager.FindByIdAsync(senderId);
-            var listRoomfromFirst = await context.chatRooms.Where(x => x.users.Contains(userFirst)).ToListAsync();
+            var listRoomfromFirst = await context.chatRooms
+                .Include(x => x.users)
+                .Where(x => x.users.Contains(userFirst)).ToListAsync();
 
             var userSecond = await userManager.FindByIdAsync(receiverId);
-            var listRoomFromSecond = await context.chatRooms.Where(x => x.users.Contains(userSecond)).ToListAsync();
+            var listRoomFromSecond = await context.chatRooms
+                .Include(x => x.users)
+                .Where(x => x.users.Contains(userSecond)).ToListAsync();
 
             for (int i = 0; i < listRoomFromSecond.Count; i++)
             {
@@ -251,25 +221,36 @@ namespace _0sechill.Hubs
         /// <param name="room"></param>
         /// <returns></returns>
         [HubMethodName("SendMessage")]
-        public async Task SendMessageAsync(ApplicationUser sender, string message, Room room)
+        public async Task SendMessageAsync(string senderId, string message, Room room)
         {
-
-            await RecordMessagesAsync(sender, message, room);
+            var username = Context.User.Identity.Name;
+            await RecordMessagesAsync(senderId, message, room);
             try
             {
-                if (!string.IsNullOrEmpty(room.roomName))
+                if (!string.IsNullOrEmpty(room.ID.ToString()))
                 {
-                    await Clients.Group(room.roomName).Chat(sender.UserName, message);
-
+                    if (room.isGroupChat)
+                    {
+                        await Clients.Group(room.ID.ToString()).Chat(username, message, room.ID.ToString(), roomName: room.roomName);
+                    }
+                    else
+                    {
+                        var currentRoomName = string.Empty;
+                        foreach (var user in room.users)
+                        {
+                            currentRoomName = (!user.Id.Equals(Context.UserIdentifier)) ? user.UserName.ToString() : "Name Not found!";
+                        }
+                        await Clients.Group(room.ID.ToString()).Chat(username, message, room.ID.ToString(), roomName: currentRoomName);
+                    }
                 }
                 else
                 {
-                    await Clients.All.Chat(sender.UserName, message);
+                    await Clients.All.Chat(username, message, "All", roomName: string.Empty);
                 }
             }
             catch (Exception ex)
             {
-                await Clients.All.Chat("System Exception", ex.Message);
+                await Clients.All.Chat("System Exception", ex.Message, "ALL", roomName: string.Empty);
             }
         }
     }
