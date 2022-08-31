@@ -446,7 +446,7 @@ namespace _0sechill.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error in using email service: {ex.Message}");
+                logger.LogError($"Error in using Email/Notification service: {ex.Message}");
                 return false;
             }
         }

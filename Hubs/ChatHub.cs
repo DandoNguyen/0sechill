@@ -145,6 +145,7 @@ namespace _0sechill.Hubs
             if (existRoom is not null)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, existRoom.ID.ToString());
+                await UpdateMessagesStatusAsync(existRoom.ID.ToString());
                 await SendMessageAsync(senderId, message, existRoom);
             }
             //Create new Room when exist Room is null
@@ -156,10 +157,49 @@ namespace _0sechill.Hubs
                 await context.SaveChangesAsync();
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, newRoom.ID.ToString());
+                await UpdateMessagesStatusAsync(newRoom.ID.ToString());
                 await SendMessageAsync(senderId, message, newRoom);
             }
         }
+
+        /// <summary>
+        /// this is the method that send message to specific room
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        [HubMethodName("SendMessageToRoom")]
+        public async Task SendMessageToRoomAsync([Required] string roomId, [Required] string message)
+        {
+            var room = await context.chatRooms
+                .Where(x => x.ID.Equals(Guid.Parse(roomId))).FirstOrDefaultAsync();
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, room.ID.ToString());
+            await UpdateMessagesStatusAsync(roomId);
+            await SendMessageAsync(Context.UserIdentifier, message, room);
+        }
         
+        /// <summary>
+        /// this is the method that update the message status isSeen to true
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <returns></returns>
+        private async Task UpdateMessagesStatusAsync(string roomId)
+        {
+            var listUnseenMessages = await context.chatMessages
+                .Where(x => x.roomId.Equals(Guid.Parse(roomId)))
+                .Where(x => x.isSeen.Equals(false)).ToListAsync();
+            if (!listUnseenMessages.Count.Equals(0))
+            {
+                foreach (var message in listUnseenMessages)
+                {
+                    message.isSeen = true;
+                }
+                context.chatMessages.UpdateRange(listUnseenMessages);
+                await context.SaveChangesAsync();
+            }
+        }
+
         /// <summary>
         /// represent the method recording message everytime it is called
         /// </summary>
@@ -220,8 +260,7 @@ namespace _0sechill.Hubs
         /// <param name="message"></param>
         /// <param name="room"></param>
         /// <returns></returns>
-        [HubMethodName("SendMessage")]
-        public async Task SendMessageAsync(string senderId, string message, Room room)
+        private async Task SendMessageAsync(string senderId, string message, Room room)
         {
             var username = Context.User.Identity.Name;
             await RecordMessagesAsync(senderId, message, room);
@@ -245,7 +284,7 @@ namespace _0sechill.Hubs
                 }
                 else
                 {
-                    await Clients.All.Chat(username, message, "All", roomName: string.Empty);
+                    await Clients.All.Chat(user: "System Exception", message: "Room Not Found", "All", roomName: string.Empty);
                 }
             }
             catch (Exception ex)
