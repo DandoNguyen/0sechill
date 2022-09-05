@@ -1,5 +1,6 @@
 ﻿using _0sechill.Data;
 using _0sechill.Hubs.Dto;
+using _0sechill.Hubs.Interfaces;
 using _0sechill.Hubs.Model;
 using _0sechill.Models;
 using _0sechill.Services;
@@ -13,7 +14,7 @@ using System.ComponentModel.DataAnnotations;
 namespace _0sechill.Hubs
 {
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class ChatHub : Hub<IHubClient>, IChatHub
+    public class ChatHub : Hub<IHubCustomClient>, IChatHub
     {
         private readonly ApiDbContext context;
         private readonly UserManager<ApplicationUser> userManager;

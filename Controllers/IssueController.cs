@@ -3,7 +3,7 @@ using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Dto.MailDto;
-using _0sechill.Hubs;
+using _0sechill.Hubs.Interfaces;
 using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;

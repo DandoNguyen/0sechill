@@ -1,5 +1,6 @@
 using _0sechill.Data;
 using _0sechill.Hubs;
+using _0sechill.Hubs.Config;
 using _0sechill.Models;
 using _0sechill.Services;
 using _0sechill.Services.Class;
@@ -141,5 +142,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
+app.MapHub<MediaHub>("/mediahub");
 
 app.Run();

@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
-namespace _0sechill.Hubs
+namespace _0sechill.Hubs.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -93,7 +93,7 @@ namespace _0sechill.Hubs
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpGet, Route("LoadOldMessage")] 
+        [HttpGet, Route("LoadOldMessage")]
         public async Task<IActionResult> LoadOldMessageAsync(MessageRequestDto dto)
         {
             var listMessage = await context.chatMessages
