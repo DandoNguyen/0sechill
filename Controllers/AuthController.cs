@@ -148,6 +148,62 @@ namespace _0sechill.Controllers
         }
 
         /// <summary>
+        /// represent the method register new account for admin
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RegisterAdmin")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterAdminAsync([FromBody] RegistrationDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await userManager.Users
+                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.email));
+                if (existingUser is not null)
+                    return BadRequest(new AuthResponseDto()
+                    {
+                        success = false,
+                        message =
+                        {
+                            $"Email {dto.email} has been registered!"
+                        }
+                    });
+
+                var newUser = mapper.Map<ApplicationUser>(dto);
+                newUser.role = UserRole.Admin.ToString();
+
+                var isCreated = await userManager.CreateAsync(newUser, dto.password);
+
+                if (isCreated.Succeeded)
+                    return Ok(new AuthResponseDto()
+                    {
+                        success = true,
+                        message =
+                        {
+                            $"Admin {dto.UserName} registered Successfully!"
+                        }
+                    });
+                else
+                    return new JsonResult(new AuthResponseDto()
+                    {
+                        success = false,
+                        message = isCreated.Errors.Select(x => x.Description).ToList()
+                    })
+                    { StatusCode = 500 };
+            }
+            return BadRequest(new AuthResponseDto()
+            {
+                success = false,
+                message =
+                {
+                    "Invald Payload!"
+                }
+            });
+        }
+
+        /// <summary>
         /// represent the method getting profile details from login user
         /// </summary>
         /// <param name="Authorization"></param>
