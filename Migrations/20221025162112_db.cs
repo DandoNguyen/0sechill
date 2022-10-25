@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace _0sechill.Migrations
 {
-    public partial class addchatmodels : Migration
+    public partial class db : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -41,7 +41,8 @@ namespace _0sechill.Migrations
                 {
                     ID = table.Column<Guid>(type: "TEXT", nullable: false),
                     isGroupChat = table.Column<bool>(type: "INTEGER", nullable: false),
-                    roomName = table.Column<string>(type: "TEXT", nullable: true)
+                    roomName = table.Column<string>(type: "TEXT", nullable: true),
+                    groupAdmin = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,6 +59,21 @@ namespace _0sechill.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_departments", x => x.departmentId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notifications",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    title = table.Column<string>(type: "TEXT", nullable: true),
+                    content = table.Column<string>(type: "TEXT", nullable: true),
+                    receiverId = table.Column<string>(type: "TEXT", nullable: true),
+                    isSeen = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notifications", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -99,12 +115,18 @@ namespace _0sechill.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
-                    userId = table.Column<Guid>(type: "TEXT", nullable: false),
                     userCode = table.Column<string>(type: "TEXT", nullable: true),
                     firstName = table.Column<string>(type: "TEXT", nullable: true),
                     lastName = table.Column<string>(type: "TEXT", nullable: true),
                     DOB = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    age = table.Column<int>(type: "INTEGER", nullable: false),
+                    IDType = table.Column<string>(type: "TEXT", nullable: true),
+                    IDNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    roleID = table.Column<string>(type: "TEXT", nullable: true),
+                    residentialAddress = table.Column<string>(type: "TEXT", nullable: true),
+                    phoneCountryCode = table.Column<string>(type: "TEXT", nullable: true),
                     role = table.Column<string>(type: "TEXT", nullable: true),
+                    currentHubConnectionId = table.Column<string>(type: "TEXT", nullable: true),
                     Token = table.Column<string>(type: "TEXT", nullable: true),
                     TokenCreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     TokenExpireDate = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -132,6 +154,30 @@ namespace _0sechill.Migrations
                         column: x => x.departmentId,
                         principalTable: "departments",
                         principalColumn: "departmentId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ApplicationUserRoom",
+                columns: table => new
+                {
+                    chatRoomsID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    usersId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApplicationUserRoom", x => new { x.chatRoomsID, x.usersId });
+                    table.ForeignKey(
+                        name: "FK_ApplicationUserRoom_AspNetUsers_usersId",
+                        column: x => x.usersId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ApplicationUserRoom_chatRooms_chatRoomsID",
+                        column: x => x.chatRoomsID,
+                        principalTable: "chatRooms",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -244,9 +290,10 @@ namespace _0sechill.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     message = table.Column<string>(type: "TEXT", nullable: true),
+                    isSeen = table.Column<bool>(type: "INTEGER", nullable: false),
                     createdDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     userId = table.Column<string>(type: "TEXT", nullable: true),
-                    RoomID = table.Column<Guid>(type: "TEXT", nullable: true)
+                    roomId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -257,10 +304,11 @@ namespace _0sechill.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_chatMessages_chatRooms_RoomID",
-                        column: x => x.RoomID,
+                        name: "FK_chatMessages_chatRooms_roomId",
+                        column: x => x.roomId,
                         principalTable: "chatRooms",
-                        principalColumn: "ID");
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -291,29 +339,6 @@ namespace _0sechill.Migrations
                         name: "FK_issues_categories_categoryID",
                         column: x => x.categoryID,
                         principalTable: "categories",
-                        principalColumn: "ID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "userConnections",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    RoomID = table.Column<Guid>(type: "TEXT", nullable: true),
-                    userId = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_userConnections", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_userConnections_AspNetUsers_userId",
-                        column: x => x.userId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_userConnections_chatRooms_RoomID",
-                        column: x => x.RoomID,
-                        principalTable: "chatRooms",
                         principalColumn: "ID");
                 });
 
@@ -497,6 +522,11 @@ namespace _0sechill.Migrations
                 column: "blockId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ApplicationUserRoom_usersId",
+                table: "ApplicationUserRoom",
+                column: "usersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -556,9 +586,9 @@ namespace _0sechill.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_chatMessages_RoomID",
+                name: "IX_chatMessages_roomId",
                 table: "chatMessages",
-                column: "RoomID");
+                column: "roomId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_chatMessages_userId",
@@ -611,16 +641,6 @@ namespace _0sechill.Migrations
                 column: "applicationUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_userConnections_RoomID",
-                table: "userConnections",
-                column: "RoomID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_userConnections_userId",
-                table: "userConnections",
-                column: "userId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_userHistories_apartmentId",
                 table: "userHistories",
                 column: "apartmentId");
@@ -633,6 +653,9 @@ namespace _0sechill.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ApplicationUserRoom");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -658,13 +681,13 @@ namespace _0sechill.Migrations
                 name: "filePaths");
 
             migrationBuilder.DropTable(
+                name: "notifications");
+
+            migrationBuilder.DropTable(
                 name: "rentalHistories");
 
             migrationBuilder.DropTable(
                 name: "socialRecognizations");
-
-            migrationBuilder.DropTable(
-                name: "userConnections");
 
             migrationBuilder.DropTable(
                 name: "userHistories");
@@ -673,10 +696,10 @@ namespace _0sechill.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "assignIssues");
+                name: "chatRooms");
 
             migrationBuilder.DropTable(
-                name: "chatRooms");
+                name: "assignIssues");
 
             migrationBuilder.DropTable(
                 name: "apartments");

@@ -18,9 +18,7 @@ namespace _0sechill.Models
         public string IDNumber { get; set; }
         public string roleID { get; set; }
         public string residentialAddress { get; set; }
-        public string email { get; set; }
         public string phoneCountryCode { get; set; }
-        public string phoneNumber { get; set; }
 
         public string role { get; set; }
         public string currentHubConnectionId { get; set; }

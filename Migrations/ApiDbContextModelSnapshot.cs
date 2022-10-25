@@ -26,6 +26,9 @@ namespace _0sechill.Migrations
                     b.Property<DateTime>("createdDateTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("isSeen")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("message")
                         .HasColumnType("TEXT");
 
@@ -52,6 +55,9 @@ namespace _0sechill.Migrations
 
                     b.Property<string>("content")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("isSeen")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("receiverId")
                         .HasColumnType("TEXT");
@@ -148,6 +154,12 @@ namespace _0sechill.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("IDNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IDType")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
@@ -190,6 +202,9 @@ namespace _0sechill.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("age")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("currentHubConnectionId")
                         .HasColumnType("TEXT");
 
@@ -202,7 +217,16 @@ namespace _0sechill.Migrations
                     b.Property<string>("lastName")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("phoneCountryCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("residentialAddress")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("role")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("roleID")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("userCode")

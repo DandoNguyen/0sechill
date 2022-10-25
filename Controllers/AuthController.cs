@@ -120,17 +120,20 @@ namespace _0sechill.Controllers
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
 
-                var citizenRole = new IdentityRole(UserRole.Citizen.ToString());
-                if (!await roleManager.RoleExistsAsync(UserRole.Citizen.ToString().ToLower()))
-                {
-                    await roleManager.CreateAsync(citizenRole);
-                }
 
-                await userManager.AddToRoleAsync(newUser, citizenRole.Name);
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
-                if (isCreated.Succeeded)
+                if (isCreated.Succeeded) {
+                    var citizenRole = new IdentityRole(UserRole.Citizen.ToString());
+                    if (!await roleManager.RoleExistsAsync(UserRole.Citizen.ToString().ToLower()))
+                    {
+                        await roleManager.CreateAsync(citizenRole);
+                    }
+
+                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    await userManager.AddToRoleAsync(newUser, citizenRole.Name);
+
                     return Ok(new AuthResponseDto()
                     {
                         success = true,
@@ -139,13 +142,14 @@ namespace _0sechill.Controllers
                             $"User {dto.UserName} registered Successfully!"
                         }
                     });
+                }
                 else
-                    return new JsonResult(new AuthResponseDto()
-                    {
-                        success = false,
-                        message = isCreated.Errors.Select(x => x.Description).ToList()
-                    })
-                    { StatusCode = 500 };
+                return new JsonResult(new AuthResponseDto()
+                {
+                    success = false,
+                    message = isCreated.Errors.Select(x => x.Description).ToList()
+                })
+                { StatusCode = 500 };
             }
             return BadRequest(new AuthResponseDto()
             {
@@ -183,18 +187,21 @@ namespace _0sechill.Controllers
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
 
-                var adminRole = new IdentityRole(UserRole.Admin.ToString());
-                if (!await roleManager.RoleExistsAsync(UserRole.Admin.ToString().ToLower()))
-                {
-                    await roleManager.CreateAsync(adminRole);
-                }
-
-                await userManager.AddToRoleAsync(newUser, adminRole.Name);
-                
-
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
                 if (isCreated.Succeeded)
+                {
+                    var adminRole = new IdentityRole(UserRole.Admin.ToString());
+                    if (!await roleManager.RoleExistsAsync(UserRole.Admin.ToString().ToLower()))
+                    {
+                        await roleManager.CreateAsync(adminRole);
+                    }
+
+                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    if (newUser is not null)
+                    {
+                        await userManager.AddToRoleAsync(newUser, adminRole.Name);
+                    }
                     return Ok(new AuthResponseDto()
                     {
                         success = true,
@@ -203,6 +210,8 @@ namespace _0sechill.Controllers
                             $"Admin {dto.UserName} registered Successfully!"
                         }
                     });
+                }
+                    
                 else
                     return new JsonResult(new AuthResponseDto()
                     {

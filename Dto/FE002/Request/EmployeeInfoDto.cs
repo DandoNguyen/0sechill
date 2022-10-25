@@ -12,9 +12,9 @@
         public string IDNumber { get; set; }
         public string roleID { get; set; }
         public string residentialAddress { get; set; }
-        public string email { get; set; }
+        public string Email { get; set; }
         public string phoneCountryCode { get; set; }
-        public string phoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
     }
 }
