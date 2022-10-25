@@ -27,15 +27,18 @@ namespace _0sechill.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ITokenService tokenService;
         private readonly IMapper mapper;
+        private readonly RoleManager<IdentityRole> roleManager;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
-            IMapper mapper)
+            IMapper mapper, 
+            RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.tokenService = tokenService;
             this.mapper = mapper;
+            this.roleManager = roleManager;
         }
 
         /// <summary>
@@ -116,7 +119,14 @@ namespace _0sechill.Controllers
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
-                newUser.role = UserRole.Citizen.ToString();
+
+                var citizenRole = new IdentityRole(UserRole.Citizen.ToString());
+                if (!await roleManager.RoleExistsAsync(UserRole.Citizen.ToString().ToLower()))
+                {
+                    await roleManager.CreateAsync(citizenRole);
+                }
+
+                await userManager.AddToRoleAsync(newUser, citizenRole.Name);
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
@@ -172,7 +182,15 @@ namespace _0sechill.Controllers
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
-                newUser.role = UserRole.Admin.ToString();
+
+                var adminRole = new IdentityRole(UserRole.Admin.ToString());
+                if (!await roleManager.RoleExistsAsync(UserRole.Admin.ToString().ToLower()))
+                {
+                    await roleManager.CreateAsync(adminRole);
+                }
+
+                await userManager.AddToRoleAsync(newUser, adminRole.Name);
+                
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
