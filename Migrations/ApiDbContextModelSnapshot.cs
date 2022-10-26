@@ -214,6 +214,9 @@ namespace _0sechill.Migrations
                     b.Property<string>("firstName")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("isMale")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("lastName")
                         .HasColumnType("TEXT");
 

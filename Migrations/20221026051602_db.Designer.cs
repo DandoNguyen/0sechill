@@ -11,7 +11,7 @@ using _0sechill.Data;
 namespace _0sechill.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20221025162112_db")]
+    [Migration("20221026051602_db")]
     partial class db
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -215,6 +215,9 @@ namespace _0sechill.Migrations
 
                     b.Property<string>("firstName")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("isMale")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("lastName")
                         .HasColumnType("TEXT");

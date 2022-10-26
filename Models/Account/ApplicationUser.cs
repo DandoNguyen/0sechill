@@ -14,6 +14,7 @@ namespace _0sechill.Models
         public DateTime DOB { get; set; }
 
         public int age { get; set; }
+        public bool isMale { get; set; }
         public string IDType { get; set; }
         public string IDNumber { get; set; }
         public string roleID { get; set; }

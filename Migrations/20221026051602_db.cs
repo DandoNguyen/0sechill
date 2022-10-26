@@ -120,6 +120,7 @@ namespace _0sechill.Migrations
                     lastName = table.Column<string>(type: "TEXT", nullable: true),
                     DOB = table.Column<DateTime>(type: "TEXT", nullable: false),
                     age = table.Column<int>(type: "INTEGER", nullable: false),
+                    isMale = table.Column<bool>(type: "INTEGER", nullable: false),
                     IDType = table.Column<string>(type: "TEXT", nullable: true),
                     IDNumber = table.Column<string>(type: "TEXT", nullable: true),
                     roleID = table.Column<string>(type: "TEXT", nullable: true),
