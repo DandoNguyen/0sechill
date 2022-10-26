@@ -175,12 +175,12 @@ namespace _0sechill.Services.Class
                 {
                     var ws = package.Workbook.Worksheets.FirstOrDefault();
 
-                    for (int col = ws.Dimension.Start.Column + 1; col <= ws.Dimension.Start.Column + 4; col++)
+                    for (int col = ws.Dimension.Start.Column + 1; col <= ws.Dimension.Start.Column + 10; col++)
                     {
                         for (int row = ws.Dimension.Start.Row + 1; row <= ws.Dimension.End.Row; row++)
                         {
-                            var cellValue = ws.Cells[row, col].Value.ToString();
-                            if (string.IsNullOrEmpty(cellValue))
+                            var cellValue = ws.Cells[row, col].Value;
+                            if (cellValue is null)
                             {
                                 break;
                             } 
@@ -191,7 +191,7 @@ namespace _0sechill.Services.Class
                                 newLookUpItem.lookUpID = Guid.NewGuid();
                                 newLookUpItem.lookUpTypeName = ws.Cells[2, col].Value.ToString();
                                 newLookUpItem.lookUpTypeCode = ws.Cells[1, col].Value.ToString();
-                                newLookUpItem.valueString = cellValue;
+                                newLookUpItem.valueString = cellValue.ToString();
 
                                 lookUpsList.Add(newLookUpItem);
                             }

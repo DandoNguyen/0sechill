@@ -1,7 +1,9 @@
 ﻿using _0sechill.Data;
+using _0sechill.Models.LookUpData;
 using _0sechill.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace _0sechill.Controllers
 {
@@ -37,7 +39,11 @@ namespace _0sechill.Controllers
             {
                 try
                 {
+                    var listToDelete = await context.lookUp.Select(x => new LookUpTable { lookUpID = x.lookUpID }).ToListAsync();
+                    context.lookUp.RemoveRange(listToDelete);
+
                     context.lookUp.AddRange(listLookUp);
+                    await context.SaveChangesAsync();
                     return Ok("Look Up Data Added");
                 }
                 catch (Exception e)
