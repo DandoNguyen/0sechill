@@ -2,6 +2,7 @@
 using _0sechill.Models;
 using _0sechill.Models.Account;
 using _0sechill.Models.IssueManagement;
+using _0sechill.Models.LookUpData;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,7 @@ namespace _0sechill.Data
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<LookUpTable> lookUp { get; set; }
         public DbSet<Notifications> notifications { get; set; }
         public DbSet<Room> chatRooms { get; set; }
         public DbSet<Message> chatMessages { get; set; }
