@@ -1,4 +1,5 @@
 ﻿using _0sechill.Models;
+using _0sechill.Models.LookUpData;
 using OfficeOpenXml;
 using System.Linq;
 
@@ -6,6 +7,12 @@ namespace _0sechill.Services.Class
 {
     public class ExcelService : IExcelService
     {
+        private readonly IConfiguration config;
+
+        public ExcelService(IConfiguration config)
+        {
+            this.config = config;
+        }
         public async Task<List<Block>> ImportBlock(IFormFile formFile)
         {
             using (var stream = new MemoryStream())
@@ -151,6 +158,49 @@ namespace _0sechill.Services.Class
                 }
             }
             return null;
+        }
+
+
+        public async Task<List<LookUpTable>> ImportLookUpFile(IFormFile formFile)
+        {
+            List<LookUpTable> lookUpsList = new List<LookUpTable>();
+
+            var package = new ExcelPackage();
+            using (var stream = new MemoryStream())
+            {
+                await formFile.CopyToAsync(stream);
+
+                package = new ExcelPackage(stream);
+                if (package is not null)
+                {
+                    var ws = package.Workbook.Worksheets.FirstOrDefault();
+
+                    for (int col = ws.Dimension.Start.Column + 1; col <= ws.Dimension.Start.Column + 4; col++)
+                    {
+                        for (int row = ws.Dimension.Start.Row + 1; row <= ws.Dimension.End.Row; row++)
+                        {
+                            var cellValue = ws.Cells[row, col].Value.ToString();
+                            if (string.IsNullOrEmpty(cellValue))
+                            {
+                                break;
+                            } 
+
+                            else
+                            {
+                                var newLookUpItem = new LookUpTable();
+                                newLookUpItem.lookUpID = Guid.NewGuid();
+                                newLookUpItem.lookUpTypeName = ws.Cells[2, col].Value.ToString();
+                                newLookUpItem.lookUpTypeCode = ws.Cells[1, col].Value.ToString();
+                                newLookUpItem.valueString = cellValue;
+
+                                lookUpsList.Add(newLookUpItem);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return lookUpsList;
         }
     }
 }
