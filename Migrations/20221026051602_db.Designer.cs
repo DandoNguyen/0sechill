@@ -11,8 +11,8 @@ using _0sechill.Data;
 namespace _0sechill.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20220824052420_modify room table")]
-    partial class modifyroomtable
+    [Migration("20221026051602_db")]
+    partial class db
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,6 +27,9 @@ namespace _0sechill.Migrations
 
                     b.Property<DateTime>("createdDateTime")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("isSeen")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("message")
                         .HasColumnType("TEXT");
@@ -46,10 +49,36 @@ namespace _0sechill.Migrations
                     b.ToTable("chatMessages");
                 });
 
+            modelBuilder.Entity("_0sechill.Hubs.Model.Notifications", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("content")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("isSeen")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("receiverId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("title")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("notifications");
+                });
+
             modelBuilder.Entity("_0sechill.Hubs.Model.Room", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("groupAdmin")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("isGroupChat")
@@ -127,6 +156,12 @@ namespace _0sechill.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("IDNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IDType")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
 
@@ -169,22 +204,37 @@ namespace _0sechill.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("age")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("currentHubConnectionId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("departmentId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("firstName")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("isMale")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("lastName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("phoneCountryCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("residentialAddress")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("role")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("userCode")
+                    b.Property<string>("roleID")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("userId")
+                    b.Property<string>("userCode")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

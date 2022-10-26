@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace _0sechill.Hubs
+namespace _0sechill.Hubs.Config
 {
     public class INameUserIdProvider : IUserIdProvider
     {

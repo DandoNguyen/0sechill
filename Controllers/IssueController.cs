@@ -3,6 +3,7 @@ using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Dto.Issues.Requests;
 using _0sechill.Dto.Issues.Response;
 using _0sechill.Dto.MailDto;
+using _0sechill.Hubs.Interfaces;
 using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
@@ -30,6 +31,7 @@ namespace _0sechill.Controllers
         private readonly IConfiguration config;
         private readonly IMailService mailService;
         private readonly IMapper mapper;
+        private readonly IChatHub chatHub;
         private readonly ILogger<IssueController> logger;
 
         public IssueController(
@@ -40,6 +42,7 @@ namespace _0sechill.Controllers
             IConfiguration config,
             IMailService mailService,
             IMapper mapper,
+            IChatHub chatHub,
             ILogger<IssueController> logger)
         {
             this.context = context;
@@ -49,6 +52,7 @@ namespace _0sechill.Controllers
             this.config = config;
             this.mailService = mailService;
             this.mapper = mapper;
+            this.chatHub = chatHub;
             this.logger = logger;
         }
 
@@ -427,14 +431,22 @@ namespace _0sechill.Controllers
                 Body = $"Citizen {author.UserName} has created an issue {newIssue.title} under category {newIssue.category.cateName}"
             };
 
+            var blockManager = await userManager.FindByEmailAsync(blockManagerEmail);
+            var newNotif = new Hubs.Model.Notifications()
+            {
+                title = $"Citizen {author.UserName} raised an issue",
+                content = $"Citizen {author.UserName} has created an issue {newIssue.title} under category {newIssue.category.cateName}"
+            };
+
             try
             {
+                await chatHub.SendNotificationToUser(blockManager.Id, newNotif);
                 await mailService.SendMailAsync(mailContent);
                 return true;
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error in using email service: {ex.Message}");
+                logger.LogError($"Error in using Email/Notification service: {ex.Message}");
                 return false;
             }
         }

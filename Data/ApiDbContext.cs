@@ -27,6 +27,7 @@ namespace _0sechill.Data
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<Notifications> notifications { get; set; }
         public DbSet<Room> chatRooms { get; set; }
         public DbSet<Message> chatMessages { get; set; }
         public DbSet<AssignIssue> assignIssues { get; set; }

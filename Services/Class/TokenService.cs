@@ -80,9 +80,10 @@ namespace _0sechill.Services.Class
             var claims = new List<Claim> {
                 new Claim("Id", user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, user.Id)
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
             //Getting the claims that we have assigned to the user
@@ -91,18 +92,21 @@ namespace _0sechill.Services.Class
 
             //Get the user role and add to the user
             var userRoles = await userManager.GetRolesAsync(user);
-            foreach (var userRole in userRoles)
+            if (!userRoles.Count.Equals(0))
             {
-                claims.Add(new Claim(ClaimTypes.Role, userRole));
-
-                var role = await roleManager.FindByNameAsync(userRole);
-
-                if (role is not null)
+                foreach (var userRole in userRoles)
                 {
-                    var listRoleClaims = await roleManager.GetClaimsAsync(role);
-                    foreach (var roleClaim in listRoleClaims)
+                    claims.Add(new Claim(ClaimTypes.Role, userRole));
+
+                    var role = await roleManager.FindByNameAsync(userRole);
+
+                    if (role is not null)
                     {
-                        claims.Add(roleClaim);
+                        var listRoleClaims = await roleManager.GetClaimsAsync(role);
+                        foreach (var roleClaim in listRoleClaims)
+                        {
+                            claims.Add(roleClaim);
+                        }
                     }
                 }
             }

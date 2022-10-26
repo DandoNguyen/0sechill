@@ -27,15 +27,18 @@ namespace _0sechill.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ITokenService tokenService;
         private readonly IMapper mapper;
+        private readonly RoleManager<IdentityRole> roleManager;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
-            IMapper mapper)
+            IMapper mapper, 
+            RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.tokenService = tokenService;
             this.mapper = mapper;
+            this.roleManager = roleManager;
         }
 
         /// <summary>
@@ -116,11 +119,21 @@ namespace _0sechill.Controllers
                     });
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
-                newUser.role = UserRole.Citizen;
+
+
 
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
-                if (isCreated.Succeeded)
+                if (isCreated.Succeeded) {
+                    var citizenRole = new IdentityRole(UserRole.Citizen.ToString());
+                    if (!await roleManager.RoleExistsAsync(UserRole.Citizen.ToString().ToLower()))
+                    {
+                        await roleManager.CreateAsync(citizenRole);
+                    }
+
+                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    await userManager.AddToRoleAsync(newUser, citizenRole.Name);
+
                     return Ok(new AuthResponseDto()
                     {
                         success = true,
@@ -129,6 +142,76 @@ namespace _0sechill.Controllers
                             $"User {dto.UserName} registered Successfully!"
                         }
                     });
+                }
+                else
+                return new JsonResult(new AuthResponseDto()
+                {
+                    success = false,
+                    message = isCreated.Errors.Select(x => x.Description).ToList()
+                })
+                { StatusCode = 500 };
+            }
+            return BadRequest(new AuthResponseDto()
+            {
+                success = false,
+                message =
+                {
+                    "Invald Payload!"
+                }
+            });
+        }
+
+        /// <summary>
+        /// represent the method register new account for admin
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("RegisterAdmin")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterAdminAsync([FromBody] RegistrationDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var existingUser = await userManager.Users
+                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.email));
+                if (existingUser is not null)
+                    return BadRequest(new AuthResponseDto()
+                    {
+                        success = false,
+                        message =
+                        {
+                            $"Email {dto.email} has been registered!"
+                        }
+                    });
+
+                var newUser = mapper.Map<ApplicationUser>(dto);
+
+                var isCreated = await userManager.CreateAsync(newUser, dto.password);
+
+                if (isCreated.Succeeded)
+                {
+                    var adminRole = new IdentityRole(UserRole.Admin.ToString());
+                    if (!await roleManager.RoleExistsAsync(UserRole.Admin.ToString().ToLower()))
+                    {
+                        await roleManager.CreateAsync(adminRole);
+                    }
+
+                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    if (newUser is not null)
+                    {
+                        await userManager.AddToRoleAsync(newUser, adminRole.Name);
+                    }
+                    return Ok(new AuthResponseDto()
+                    {
+                        success = true,
+                        message =
+                        {
+                            $"Admin {dto.UserName} registered Successfully!"
+                        }
+                    });
+                }
+                    
                 else
                     return new JsonResult(new AuthResponseDto()
                     {
@@ -154,11 +237,13 @@ namespace _0sechill.Controllers
         /// <returns></returns>
         [HttpGet, Route("GetProfile")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> GetProfileAsync([FromHeader] string Authorization)
+        public async Task<IActionResult> GetProfileAsync()
         {
-            var user = await tokenService.DecodeTokenAsync(Authorization);
+            var user = await tokenService.DecodeTokenAsync(User.Claims
+                .Where(x => x.Type.Equals("Id"))
+                .Select(x => x.Value).FirstOrDefault());
             if (user is null)
-                return BadRequest("Token in valid");
+                return BadRequest("Token invalid");
 
             var ListRole = new List<string>();
             foreach (var role in user.role)
