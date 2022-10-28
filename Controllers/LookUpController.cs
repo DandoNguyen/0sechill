@@ -1,6 +1,7 @@
 ﻿using _0sechill.Data;
 using _0sechill.Models.LookUpData;
 using _0sechill.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +17,16 @@ namespace _0sechill.Controllers
     {
         private readonly ApiDbContext context;
         private readonly IExcelService excelService;
+        private readonly IMapper mapper;
 
         public LookUpController(
             ApiDbContext context,
-            IExcelService excelService)
+            IExcelService excelService,
+            IMapper mapper)
         {
             this.context = context;
             this.excelService = excelService;
+            this.mapper = mapper;
         }
 
         /// <summary>
@@ -33,23 +37,60 @@ namespace _0sechill.Controllers
         [HttpPost, Route("ImportLookUpData")]
         public async Task<IActionResult> ImportLookUpExcel(IFormFile file)
         {
-            var listLookUp = await excelService.ImportLookUpFile(file);
+            var listNewLookUp = await excelService.ImportLookUpFile(file);
+            var listExistLookUp = await context.lookUp.ToListAsync();
+            var listUpdate = new List<LookUpTable>();
+            var listAdd = new List<LookUpTable>();
 
-            if (listLookUp.Any())
+            if (listNewLookUp.Any())
             {
-                try
+                if (!listExistLookUp.Any())
                 {
-                    var listToDelete = await context.lookUp.Select(x => new LookUpTable { lookUpID = x.lookUpID }).ToListAsync();
-                    context.lookUp.RemoveRange(listToDelete);
-
-                    context.lookUp.AddRange(listLookUp);
+                    context.lookUp.AddRange(listNewLookUp);
                     await context.SaveChangesAsync();
                     return Ok("Look Up Data Added");
                 }
-                catch (Exception e)
+
+                else
                 {
-                    return BadRequest(e.Message);
+                    try
+                    {
+                        foreach (var newLookUp in listNewLookUp)
+                        {
+                            foreach (var existLookUp in listExistLookUp)
+                            {
+                                if (newLookUp.lookUpTypeCode.Equals(existLookUp.lookUpTypeCode) && newLookUp.index.Equals(existLookUp.index))
+                                {
+                                    var updateLookUp = new LookUpTable();
+
+                                    updateLookUp = mapper.Map<LookUpTable>(existLookUp);
+                                    updateLookUp.valueString = existLookUp.valueString;
+
+                                    listUpdate.Add(updateLookUp);
+                                    listNewLookUp.Remove(newLookUp);
+                                    break;
+                                }
+                            }
+                            
+                        }
+
+                        if (listNewLookUp.Any())
+                        {
+                            listAdd = listNewLookUp;
+                            context.lookUp.AddRange(listAdd);
+                        }
+
+                        context.lookUp.UpdateRange(listUpdate);
+                       
+                        await context.SaveChangesAsync();
+                        return Ok("Look Up Data Added");
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
                 }
+                
             }
             return BadRequest("Can't read file");
         }
