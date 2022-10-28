@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using _0sechill.Models.LookUpData;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Models.IssueManagement
 {
@@ -12,30 +13,31 @@ namespace _0sechill.Models.IssueManagement
         public string feedback { get; set; }
 
         //TimeStamps
-        public DateOnly createdDate { get; set; }
-        public DateOnly lastModifiedDate { get; set; }
+        public DateTime createdDate { get; set; }
+        public DateTime lastModifiedDate { get; set; }
         [Required]
         public bool isPrivate { get; set; }
 
         //FK
         [Required]
         public Guid cateId { get; set; }
-        public Category category { get; set; }
         public string authorId { get; set; }
         public ApplicationUser author { get; set; }
 
         public AssignIssue assignIssue { get; set; }
 
         //Collection offset
-        public ICollection<FilePath> files { get; set; }
-        public ICollection<Comments> comments { get; set; }
+        public virtual ICollection<FilePath> files { get; set; }
+        public virtual ICollection<Comments> comments { get; set; }
+        public virtual ICollection<LookUpTable> listCateLookUp { get; set; }
+        public virtual LookUpTable statusLookUp { get; set; }
 
         //On new Object event
         public Issues()
         {
             ID = Guid.NewGuid();
-            createdDate = DateOnly.FromDateTime(new DateTime());
-            lastModifiedDate = DateOnly.FromDateTime(new DateTime());
+            createdDate = DateTime.Today;
+            lastModifiedDate = DateTime.Today;
             feedback = string.Empty;
         }
     }
