@@ -2,6 +2,7 @@
 using _0sechill.Dto.FileHandlingDto;
 using _0sechill.Models.IssueManagement;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Services.Class
 {
@@ -22,15 +23,9 @@ namespace _0sechill.Services.Class
         }
 
         //Public service function that upload files to specific directory
-        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, string rootPath)
+        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, [Required] string rootPath)
         {
             var rootFilePath = "~" + rootPath.Trim();
-            if (rootFilePath is null)
-                return new UploadFileResultDto()
-                {
-                    isSucceeded = false,
-                    message = "Root Path Not Found"
-                };
 
             if (formFile is null)
             {
@@ -83,7 +78,8 @@ namespace _0sechill.Services.Class
 
                 //Create new File model Object
                 var newFile = new FilePath();
-                switch (rootFilePath)
+
+                switch (rootPath)
                 {
                     case "App_Data\\FilePaths":
                         newFile.issueId = Guid.Parse(ownerId);
