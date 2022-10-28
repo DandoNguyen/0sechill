@@ -1,4 +1,5 @@
 ﻿using _0sechill.Dto.Account.Request;
+using _0sechill.Dto.MailDto;
 using _0sechill.Dto.UserDto.Request;
 using _0sechill.Dto.UserDto.Response;
 using _0sechill.Models;
@@ -14,6 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -28,17 +31,20 @@ namespace _0sechill.Controllers
         private readonly ITokenService tokenService;
         private readonly IMapper mapper;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly IMailService mailService;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
             IMapper mapper, 
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IMailService mailService)
         {
             this.userManager = userManager;
             this.tokenService = tokenService;
             this.mapper = mapper;
             this.roleManager = roleManager;
+            this.mailService = mailService;
         }
 
         /// <summary>
@@ -107,14 +113,14 @@ namespace _0sechill.Controllers
             if (ModelState.IsValid)
             {
                 var existingUser = await userManager.Users
-                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.email));
+                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.Email));
                 if (existingUser is not null)
                     return BadRequest(new AuthResponseDto()
                     {
                         success = false,
                         message =
                         {
-                            $"Email {dto.email} has been registered!"
+                            $"Email {dto.Email} has been registered!"
                         }
                     });
 
@@ -131,7 +137,7 @@ namespace _0sechill.Controllers
                         await roleManager.CreateAsync(citizenRole);
                     }
 
-                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    newUser = await userManager.FindByEmailAsync(dto.Email);
                     await userManager.AddToRoleAsync(newUser, citizenRole.Name);
 
                     return Ok(new AuthResponseDto()
@@ -174,14 +180,14 @@ namespace _0sechill.Controllers
             if (ModelState.IsValid)
             {
                 var existingUser = await userManager.Users
-                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.email));
+                    .FirstOrDefaultAsync(x => x.Email.Equals(dto.Email));
                 if (existingUser is not null)
                     return BadRequest(new AuthResponseDto()
                     {
                         success = false,
                         message =
                         {
-                            $"Email {dto.email} has been registered!"
+                            $"Email {dto.Email} has been registered!"
                         }
                     });
 
@@ -197,7 +203,7 @@ namespace _0sechill.Controllers
                         await roleManager.CreateAsync(adminRole);
                     }
 
-                    newUser = await userManager.FindByEmailAsync(dto.email);
+                    newUser = await userManager.FindByEmailAsync(dto.Email);
                     if (newUser is not null)
                     {
                         await userManager.AddToRoleAsync(newUser, adminRole.Name);
@@ -304,6 +310,57 @@ namespace _0sechill.Controllers
                 success = true,
                 token = jwtToken
             });
+        }
+
+        /// <summary>
+        /// this is for reseting password
+        /// </summary>
+        /// <param name="email">email of the account that needs reset</param>
+        /// <returns>Http Response</returns>
+        [HttpPost, Route("ForgotPassword")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword([FromBody] [Required] [EmailAddress] string email)
+        {
+            var user = await userManager.FindByNameAsync(email);
+            if (user is null)
+            {
+                return BadRequest("Email does not exist");
+            }
+
+            //reset pass token
+            var newPassToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            var passwordResetLink = Url.Action(nameof(resetPasswordAsync), "Auth", new { email = user.Email, newPassToken }, Request.Scheme);
+
+            //inform by email to user
+            var mailContent = new MailContent()
+            {
+                ToEmail = user.Email,
+                Subject = "Password Reset",
+                Body = $"Please click the link below to confirm request new password for your account {user.Email}:\n\n{passwordResetLink}\n\nThis link will be expired within two hours"
+            };
+            await mailService.SendMailAsync(mailContent);
+            return Ok($"Please check you email ({user.Email}) inbox ");
+        }
+
+        /// <summary>
+        /// reset password endpoints
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        [HttpPost, Route("ResetPassword")]
+        public async Task<IActionResult> resetPasswordAsync(string email, string token)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            var newPassword = Guid.NewGuid().ToString();
+
+            var resetPassResult = await userManager.ResetPasswordAsync(user, token, newPassword);
+            if (resetPassResult.Succeeded)
+            {
+                return Ok($"new Pass: {newPassword}");
+            }
+
+            return Ok("Error");
         }
     }
 }

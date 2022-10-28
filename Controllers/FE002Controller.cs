@@ -55,6 +55,8 @@ namespace _0sechill.Controllers
         [HttpPost, Route("CreateProfile")]
         public async Task<IActionResult> createProfile(EmployeeInfoDto dto)
         {
+            var autoPassword = Guid.NewGuid().ToString();
+
             resultDto result = new resultDto();
             try
             {
@@ -66,7 +68,8 @@ namespace _0sechill.Controllers
 
                 try
                 {
-                    await userManager.CreateAsync(newEmployee);
+                    
+                    await userManager.CreateAsync(newEmployee, autoPassword);
                 }
                 catch (Exception ex)
                 {
@@ -79,7 +82,7 @@ namespace _0sechill.Controllers
                 }
 
                 result.isSuccess = true;
-                result.message = "Profile Created!";
+                result.message = $"Profile Created!\nYour Account: {dto.Email} \nYour Password: {autoPassword}";
                 result.error += "";
             }
             catch (Exception ex)

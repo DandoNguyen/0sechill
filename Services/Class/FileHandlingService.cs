@@ -1,7 +1,10 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.FileHandlingDto;
+using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Services.Class
 {
@@ -9,28 +12,31 @@ namespace _0sechill.Services.Class
     {
         private readonly IConfiguration config;
         private readonly ApiDbContext context;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly ILogger<FileHandlingService> logger;
 
         public FileHandlingService(
             IConfiguration config,
             ApiDbContext context,
+            UserManager<ApplicationUser> userManager,
             ILogger<FileHandlingService> logger)
         {
             this.config = config;
             this.context = context;
+            this.userManager = userManager;
             this.logger = logger;
         }
 
-        //Public service function that upload files to specific directory
-        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, string rootPath)
+        /// <summary>
+        /// Public service function that upload files to specific directory
+        /// </summary>
+        /// <param name="formFile">Target File</param>
+        /// <param name="ownerId">ID from either Issue, Avatar or feedback ID from Staff</param>
+        /// <param name="rootPath"></param>
+        /// <returns>return <paramref name="UploadFileResultDto"/></returns>
+        public async Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, [Required] string rootPath)
         {
             var rootFilePath = "~" + rootPath.Trim();
-            if (rootFilePath is null)
-                return new UploadFileResultDto()
-                {
-                    isSucceeded = false,
-                    message = "Root Path Not Found"
-                };
 
             if (formFile is null)
             {
@@ -83,16 +89,17 @@ namespace _0sechill.Services.Class
 
                 //Create new File model Object
                 var newFile = new FilePath();
-                switch (rootFilePath)
+
+                switch (rootPath)
                 {
                     case "App_Data\\FilePaths":
-                        newFile.issueId = Guid.Parse(ownerId);
+                        newFile.issues = await context.FindAsync<Issues>(Guid.Parse(ownerId));
                         break;
                     case "App_Data\\Avatar":
-                        newFile.userId = ownerId;
+                        newFile.users = await userManager.FindByIdAsync(ownerId);
                         break;
                     case "App_Data\\AssignIssueResult":
-                        newFile.assignIssueId = Guid.Parse(ownerId);
+                        newFile.assignIssue = await context.FindAsync<AssignIssue>(Guid.Parse(ownerId));
                         break;
                 }
                 newFile.filePath = finalPath;

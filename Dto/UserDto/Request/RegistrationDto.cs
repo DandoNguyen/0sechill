@@ -6,7 +6,7 @@ namespace _0sechill.Models.Dto.UserDto.Request
     {
         [Required]
         [EmailAddress]
-        public string email { get; set; }
+        public string Email { get; set; }
         [Required]
         public string citizenId { get; set; }
         [Required]
