@@ -3,7 +3,9 @@ An API for Vinhomes Resident like web and mobile application using .NET 6
 
 ## Installation
 required Dotnet 6 
+
 Clone master branch
+
 if there is any app.db file or Migrations Folder, delete them
 
 open terminal and type below
