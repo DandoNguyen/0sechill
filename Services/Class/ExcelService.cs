@@ -187,10 +187,17 @@ namespace _0sechill.Services.Class
 
                             else
                             {
+                                if (row == 2)
+                                {
+                                    continue;
+                                }
+
                                 var newLookUpItem = new LookUpTable();
                                 newLookUpItem.lookUpID = Guid.NewGuid();
                                 newLookUpItem.lookUpTypeName = ws.Cells[2, col].Value.ToString();
+
                                 newLookUpItem.lookUpTypeCode = ws.Cells[1, col].Value.ToString();
+                                newLookUpItem.index = (row - 2).ToString("00");
                                 newLookUpItem.valueString = cellValue.ToString();
 
                                 lookUpsList.Add(newLookUpItem);
