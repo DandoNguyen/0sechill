@@ -20,11 +20,9 @@ namespace _0sechill.Models.IssueManagement
 
         //FK
         [Required]
-        public Guid cateId { get; set; }
-        public string authorId { get; set; }
-        public ApplicationUser author { get; set; }
+        public virtual ApplicationUser author { get; set; }
 
-        public AssignIssue assignIssue { get; set; }
+        public virtual AssignIssue assignIssue { get; set; }
 
         //Collection offset
         public virtual ICollection<FilePath> files { get; set; }
