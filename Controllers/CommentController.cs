@@ -1,12 +1,14 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.Comments.Request;
 using _0sechill.Dto.Comments.Response;
+using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,17 +23,20 @@ namespace _0sechill.Controllers
         private readonly ITokenService tokenService;
         private readonly ILogger<CommentController> logger;
         private readonly IMapper mapper;
+        private readonly UserManager<ApplicationUser> userManager;
 
         public CommentController(
             ApiDbContext context,
             ITokenService tokenService,
             ILogger<CommentController> logger,
-            IMapper mapper)
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager)
         {
             this.context = context;
             this.tokenService = tokenService;
             this.logger = logger;
             this.mapper = mapper;
+            this.userManager = userManager;
         }
 
         /// <summary>
@@ -79,14 +84,10 @@ namespace _0sechill.Controllers
         /// <param name="Authorization"></param>
         /// <returns></returns>
         [HttpPost, Route("CreateComment")]
-        public async Task<IActionResult> CreateComment(CreateCommentDto dto, [FromHeader] string Authorization)
+        public async Task<IActionResult> CreateComment(CreateCommentDto dto)
         {
-            if (Authorization is null)
-            {
-                return Unauthorized();
-            }
 
-            var author = await tokenService.DecodeTokenAsync(Authorization);
+            var author = await userManager.GetUserAsync(this.User);
 
             var newComment = new Comments();
             if (dto.isChild)
@@ -129,7 +130,7 @@ namespace _0sechill.Controllers
         /// <param name="dto"></param>
         /// <returns></returns>
         [HttpPut, Route("EditComment")]
-        public async Task<IActionResult> EditCommnetAsync([FromBody] EditCommentDto dto)
+        public async Task<IActionResult> EditCommnetAsync(EditCommentDto dto)
         {
             var existComment = await context.comments.FindAsync(dto.commentId);
             if (existComment is null)
@@ -149,12 +150,8 @@ namespace _0sechill.Controllers
         /// <param name="Authorization"></param>
         /// <returns></returns>
         [HttpDelete, Route("DeleteComment")]
-        public async Task<IActionResult> DeleteCommentAsync([FromBody] string commentId, [FromHeader] string Authorization)
+        public async Task<IActionResult> DeleteCommentAsync(string commentId)
         {
-            if (Authorization is null)
-            {
-                return Unauthorized();
-            }
 
             var existComment = await context.comments
                 .Where(x => x.ID.Equals(Guid.Parse(commentId)))
@@ -175,7 +172,7 @@ namespace _0sechill.Controllers
                     context.comments.RemoveRange(listChildComment);
             }
 
-            var loggedUser = tokenService.DecodeTokenAsync(Authorization);
+            var loggedUser = await userManager.GetUserAsync(this.User);
             if (!loggedUser.Id.Equals(existComment.authors.Id))
             {
                 return Unauthorized("Only Author can delete this comment");
