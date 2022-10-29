@@ -12,7 +12,8 @@ namespace _0sechill.AutoMapperProfiles
             CreateMap<CreateIssueDto, Issues>();
             CreateMap<Issues, IssueDto>()
                 .ForMember(dest => dest.ID, opt => opt.MapFrom(src => src.ID.ToString()))
-                .ForMember(dest => dest.authorName, opt => opt.MapFrom(src => src.author.lastName + src.author.firstName));
+                .ForMember(dest => dest.authorName, opt => opt.MapFrom(src => src.author.lastName + src.author.firstName))
+                .ForMember(dest => dest.status, opt => opt.MapFrom(src => src.statusLookUp.valueString));
             
         }
     }

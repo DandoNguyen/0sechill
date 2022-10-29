@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Controllers
 {
@@ -148,6 +149,19 @@ namespace _0sechill.Controllers
                 }
             }
 
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await context.issues.AddAsync(newIssue);
+                    await context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    return new JsonResult($"Create Issues failed\nError: {ex.Message}") { StatusCode = 500 };
+                }
+            }
+
             if (listFileUploadResult.Any())
             {
                 return Ok(new
@@ -158,6 +172,34 @@ namespace _0sechill.Controllers
             }
 
             return Ok("Issue Created");
+        }
+
+        [HttpGet, Route("GetIssueDetail")]
+        public async Task<IActionResult> GetIssueDetail([Required] string ID)
+        {
+            var existIssue = await context.issues
+                .Include(x => x.author)
+                .Include(x => x.listCateLookUp)
+                .Include(x => x.statusLookUp)
+                .FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(ID)));
+            if (existIssue is null)
+            {
+                return BadRequest("Issue Not Found");
+            }
+
+            var issueDto = new IssueDto();
+            issueDto = mapper.Map<IssueDto>(existIssue);
+
+            //handling cate
+            foreach (var cate in existIssue.listCateLookUp)
+            {
+                issueDto.listCategory.Add(cate.valueString);
+            }
+
+            //handling status
+            issueDto.status = existIssue.statusLookUp.valueString;
+
+            return Ok(issueDto);
         }
     }
 }
