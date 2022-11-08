@@ -13,7 +13,9 @@ namespace _0sechill.Models.LookUpData
         public string valueString { get; set; }
 
         //relation
+        public Guid issueCateID { get; set; }
         public virtual Issues issuesCate { get; set; }
+        public Guid issueStatusID { get; set; }
         public virtual Issues IssuesStatus { get; set; }
     }
 }

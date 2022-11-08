@@ -5,6 +5,7 @@ using _0sechill.Models.IssueManagement;
 using _0sechill.Models.LookUpData;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace _0sechill.Data
 {
@@ -24,6 +25,16 @@ namespace _0sechill.Data
                 .HasOne(a => a.assignIssue)
                 .WithOne(b => b.Issue)
                 .HasForeignKey<AssignIssue>(b => b.issueId);
+
+            modelBuilder.Entity<LookUpTable>()
+                .HasOne(a => a.issuesCate)
+                .WithMany(b => b.listCateLookUp)
+                .HasForeignKey(b => b.issueCateID);
+
+            modelBuilder.Entity<Issues>()
+                .HasOne(a => a.statusLookUp)
+                .WithOne(b => b.IssuesStatus)
+                .HasForeignKey<LookUpTable>(b => b.issueStatusID);
 
             base.OnModelCreating(modelBuilder);
         }
