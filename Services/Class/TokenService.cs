@@ -78,7 +78,7 @@ namespace _0sechill.Services.Class
 
             //Get basic Claims
             var claims = new List<Claim> {
-                new Claim("Id", user.Id),
+                new Claim("ID", user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

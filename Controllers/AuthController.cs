@@ -245,17 +245,11 @@ namespace _0sechill.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetProfileAsync()
         {
-            var user = await tokenService.DecodeTokenAsync(User.Claims
-                .Where(x => x.Type.Equals("Id"))
-                .Select(x => x.Value).FirstOrDefault());
+            var user = await userManager.FindByIdAsync(User.FindFirst("ID").Value);
             if (user is null)
                 return BadRequest("Token invalid");
 
-            var ListRole = new List<string>();
-            foreach (var role in user.role)
-            {
-                ListRole.Add(role.ToString());
-            }
+            var ListRole = await userManager.GetRolesAsync(user);
             return new JsonResult(new
             {
                 username = user.UserName,
