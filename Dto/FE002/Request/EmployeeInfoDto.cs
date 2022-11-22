@@ -2,6 +2,7 @@
 {
     public class EmployeeInfoDto
     {
+        public string UserName { get; set; }
         public string fullname { get; set; }
         public bool isMale { get; set; }
         public string nationality { get; set; }
