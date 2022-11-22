@@ -131,6 +131,7 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <param name="bookingID"></param>
         /// <returns></returns>
+        [HttpDelete, Route("RemoveBookingTask")]
         public async Task<IActionResult> cancelBookingTask(string bookingID)
         {
             var existBookingTask = await context.bookingTasks.Where(x => x.ID.Equals(Guid.Parse(bookingID))).FirstOrDefaultAsync();

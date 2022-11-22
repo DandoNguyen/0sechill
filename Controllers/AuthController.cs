@@ -126,8 +126,6 @@ namespace _0sechill.Controllers
 
                 var newUser = mapper.Map<ApplicationUser>(dto);
 
-
-
                 var isCreated = await userManager.CreateAsync(newUser, dto.password);
 
                 if (isCreated.Succeeded) {

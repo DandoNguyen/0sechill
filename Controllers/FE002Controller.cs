@@ -54,53 +54,17 @@ namespace _0sechill.Controllers
         /// <param name="opts">A valid PasswordOptions object
         /// containing the password strength requirements.</param>
         /// <returns>A random password</returns>
-        public static string GenerateRandomPassword(PasswordOptions opts = null)
+        public static string GenerateRandomPassword(int PasswordLength)
         {
-            if (opts == null) opts = new PasswordOptions()
+            string _allowedChars = "0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ";
+            Random randNum = new Random();
+            char[] chars = new char[PasswordLength];
+            int allowedCharCount = _allowedChars.Length;
+            for (int i = 0; i < PasswordLength; i++)
             {
-                RequiredLength = 8,
-                RequiredUniqueChars = 4,
-                RequireDigit = true,
-                RequireLowercase = true,
-                RequireNonAlphanumeric = true,
-                RequireUppercase = true
-            };
-
-            string[] randomChars = new[] {
-            "ABCDEFGHJKLMNOPQRSTUVWXYZ",    // uppercase 
-            "abcdefghijkmnopqrstuvwxyz",    // lowercase
-            "0123456789",                   // digits
-            "!@$?_-"                        // non-alphanumeric
-        };
-
-            Random rand = new Random(Environment.TickCount);
-            List<char> chars = new List<char>();
-
-            if (opts.RequireUppercase)
-                chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[0][rand.Next(0, randomChars[0].Length)]);
-
-            if (opts.RequireLowercase)
-                chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[1][rand.Next(0, randomChars[1].Length)]);
-
-            if (opts.RequireDigit)
-                chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[2][rand.Next(0, randomChars[2].Length)]);
-
-            if (opts.RequireNonAlphanumeric)
-                chars.Insert(rand.Next(0, chars.Count),
-                    randomChars[3][rand.Next(0, randomChars[3].Length)]);
-
-            for (int i = chars.Count; i < opts.RequiredLength
-                || chars.Distinct().Count() < opts.RequiredUniqueChars; i++)
-            {
-                string rcs = randomChars[rand.Next(0, randomChars.Length)];
-                chars.Insert(rand.Next(0, chars.Count),
-                    rcs[rand.Next(0, rcs.Length)]);
+                chars[i] = _allowedChars[(int)((_allowedChars.Length) * randNum.NextDouble())];
             }
-
-            return new string(chars.ToArray());
+            return new string(chars);
         }
 
         /// <summary>
@@ -111,7 +75,7 @@ namespace _0sechill.Controllers
         [HttpPost, Route("CreateProfile")]
         public async Task<IActionResult> createProfile(EmployeeInfoDto dto)
         {
-            var autoPassword = GenerateRandomPassword();
+            var autoPassword = GenerateRandomPassword(20);
 
             resultDto result = new resultDto();
             try
@@ -120,7 +84,13 @@ namespace _0sechill.Controllers
                 var newEmployee = mapper.Map<ApplicationUser>(dto);
                 var nameArray = dto.fullname.Split(" ");
                 newEmployee.lastName = nameArray[0];
-                newEmployee.firstName = nameArray[1];
+                newEmployee.firstName = String.Empty;
+
+                for (int i = 1; i < nameArray.Length; i++)
+                {
+                    newEmployee.firstName += nameArray[i];
+                }
+                
 
                 try
                 {
@@ -128,7 +98,13 @@ namespace _0sechill.Controllers
                     if (!registerResult.Succeeded)
                     {
                         result.isSuccess = registerResult.Succeeded;
-                        result.error += $"{registerResult.Errors}";
+                        result.error += $"{registerResult.ToString}";
+                    } 
+                    else
+                    {
+                        result.isSuccess = true;
+                        result.message = $"Profile Created!\nYour Account: {dto.Email} \nYour Password: {autoPassword}";
+                        result.error += "";
                     }
                 }
                 catch (Exception ex)
@@ -140,10 +116,6 @@ namespace _0sechill.Controllers
                 {
                     result.error += "\nCould not add Role";
                 }
-
-                result.isSuccess = true;
-                result.message = $"Profile Created!\nYour Account: {dto.Email} \nYour Password: {autoPassword}";
-                result.error += "";
             }
             catch (Exception ex)
             {
