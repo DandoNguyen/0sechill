@@ -1,6 +1,7 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.FE003.Request;
 using _0sechill.Dto.FE003.Response;
+using _0sechill.Dto.MailDto;
 using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Models.LookUpData;
@@ -26,19 +27,22 @@ namespace _0sechill.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
+        private readonly IMailService mailService;
 
         public FE003Controller(
             ApiDbContext context,
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
             IFileHandlingService fileService,
-            IConfiguration config)
+            IConfiguration config,
+            IMailService mailService)
         {
             this.context = context;
             this.mapper = mapper;
             this.userManager = userManager;
             this.fileService = fileService;
             this.config = config;
+            this.mailService = mailService;
         }
 
         /// <summary>
@@ -162,6 +166,13 @@ namespace _0sechill.Controllers
                 }
             }
 
+            //send notification to blockManager
+            var blockManagerEmail = user.block.blockManager.Email;
+            if (blockManagerEmail != null)
+            {
+                SendEmailAsync(newIssue, blockManagerEmail);
+            } 
+
             if (listFileUploadResult.Any())
             {
                 return Ok(new
@@ -174,6 +185,22 @@ namespace _0sechill.Controllers
             return Ok("Issue Created");
         }
 
+        private void SendEmailAsync(Issues newIssue, string receiverEmail)
+        {
+            MailContent newMailContent = new MailContent()
+            {
+                ToEmail = receiverEmail,
+                Subject = "New Issue has been created!",
+                Body = $"User {newIssue.author.lastName} {newIssue.author.firstName} has created a new Issue on {newIssue.createdDate}!"
+            };
+            mailService.SendMailAsync(newMailContent);
+        }
+
+        /// <summary>
+        /// this method is to get isses Details
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
         [HttpGet, Route("GetIssueDetail")]
         public async Task<IActionResult> GetIssueDetail([Required] string ID)
         {
@@ -200,6 +227,51 @@ namespace _0sechill.Controllers
             issueDto.status = existIssue.statusLookUp.valueString;
 
             return Ok(issueDto);
+        }
+
+        /// <summary>
+        /// this is to get all issue by status
+        /// </summary>
+        /// <param name="statusID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAllIssuesByStatus([Required] string statusID)
+        {
+            var listIssues = await context.issues
+                .Include(x => x.statusLookUp)
+                .Include(x => x.listCateLookUp)
+                .Where(x => x.statusLookUp.Equals(Guid.Parse(statusID)))
+                .ToListAsync();
+
+            if (!listIssues.Any())
+            {
+                return new JsonResult(new
+                {
+                    message = "No Issue Found!"
+                })
+                { StatusCode = 204 };
+            }
+
+            var listIssueDto = new List<IssueDto>();
+            foreach (var issue in listIssues)
+            {
+                var newIssueDto = new IssueDto();
+
+                newIssueDto = mapper.Map<IssueDto>(issue);
+
+                //map Cate Lookup
+                foreach (var cate in issue.listCateLookUp)
+                {
+                    newIssueDto.listCategory.Add(cate.valueString);
+                }
+                
+                //Map Status Look Up
+                newIssueDto.status = issue.statusLookUp.valueString;
+
+                listIssueDto.Add(newIssueDto);
+            }
+
+            return Ok(listIssueDto);
         }
     }
 }

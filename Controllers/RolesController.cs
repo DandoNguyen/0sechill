@@ -4,6 +4,7 @@ using _0sechill.Dto.Role.Request;
 using _0sechill.Models;
 using _0sechill.Static;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +15,7 @@ namespace _0sechill.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
     public class RolesController : ControllerBase
     {
         private readonly ApiDbContext context;
@@ -53,7 +54,7 @@ namespace _0sechill.Controllers
             var listStaffDto = new List<StaffDto>();
             foreach (var user in listUser)
             {
-                if (user.role.Equals(UserRole.Staff))
+                if (user.role.Equals(UserRole.Staffbt))
                 {
                     var staffDto = mapper.Map<StaffDto>(user);
                     listStaffDto.Add(staffDto);

@@ -1,6 +1,7 @@
 ﻿using _0sechill.Hubs.Model;
 using _0sechill.Models;
 using _0sechill.Models.Account;
+using _0sechill.Models.Infrastructure;
 using _0sechill.Models.IssueManagement;
 using _0sechill.Models.LookUpData;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -39,6 +40,9 @@ namespace _0sechill.Data
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<Vote> votes { get; set; }
+        public DbSet<BookingTask> bookingTasks { get; set; }
+        public DbSet<PublicFacility> publicFacilities { get; set; }
         public DbSet<LookUpTable> lookUp { get; set; }
         public DbSet<Notifications> notifications { get; set; }
         public DbSet<Room> chatRooms { get; set; }

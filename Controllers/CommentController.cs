@@ -45,14 +45,14 @@ namespace _0sechill.Controllers
         /// <param name="issueId"></param>
         /// <returns></returns>
         [HttpGet, Route("GetComment")]
-        public async Task<IActionResult> GetCommentOfIssue([FromBody] string issueId)
+        public async Task<IActionResult> GetCommentOfIssue(getAllCommentDto dto)
         {
-            if (issueId is null)
+            if (dto.issueID is null)
             {
                 return BadRequest("Issue Id must not be null");
             }
 
-            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(issueId)));
+            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(dto.issueID)));
             if (existIssue is null)
             {
                 return BadRequest("Issue not found");
@@ -87,7 +87,7 @@ namespace _0sechill.Controllers
         public async Task<IActionResult> CreateComment(CreateCommentDto dto)
         {
 
-            var author = await userManager.GetUserAsync(this.User);
+            var author = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
 
             var newComment = new Comments();
             if (dto.isChild)

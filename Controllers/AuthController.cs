@@ -69,7 +69,7 @@ namespace _0sechill.Controllers
                         }
                     });
                 var newUser = mapper.Map<ApplicationUser>(existingUser);
-                newUser.role = UserRole.Staff;
+                newUser.role = UserRole.Staffbt;
                 var isCreated = await userManager.CreateAsync(newUser);
                 if (isCreated.Succeeded)
                 {
