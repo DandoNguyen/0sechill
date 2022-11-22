@@ -231,7 +231,20 @@ namespace _0sechill.Hubs
         /// <returns></returns>
         private async Task<Room> FindExistRoomAsync(string senderId, string receiverId)
         {
-            var userFirst = await userManager.FindByIdAsync(senderId);
+            var userFirst = new ApplicationUser();
+            try
+            {
+                userFirst = await userManager.FindByIdAsync(Context.User.FindFirst("ID").Value.ToString());
+                if (userFirst is null)
+                {
+                    userFirst = await userManager.FindByIdAsync(senderId);
+                }
+            }
+            catch (Exception)
+            {
+                userFirst = await userManager.FindByIdAsync(senderId);
+            }
+            
             var listRoomfromFirst = await context.chatRooms
                 .Include(x => x.users)
                 .Where(x => x.users.Contains(userFirst)).ToListAsync();

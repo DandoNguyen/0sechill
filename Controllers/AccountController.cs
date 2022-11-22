@@ -35,7 +35,7 @@ namespace _0sechill.Controllers
         public async Task<IActionResult> GetAllStaffAsync()
         {
             var listStaff = await context.ApplicationUser
-                .Where(x => x.role.Trim().ToLower().Equals(UserRole.Staff))
+                .Where(x => x.role.Trim().ToLower().Equals(UserRole.Staffbt))
                 .ToListAsync();
             var listStaffDto = new List<StaffDto>();
             foreach (var staff in listStaff)

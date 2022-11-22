@@ -3,7 +3,8 @@
     public static class UserRole
     {
         public static string Admin = "admin";
-        public static string Staff = "staff";
+        public static string Staffbt = "staffbt";
+        public static string Staffst = "staffst";
         public static string Citizen = "citizen";
         public static string BlockManager = "blockManager";
 
@@ -11,7 +12,8 @@
         {
             var listFields = new List<string>();
             listFields.Add(Admin);
-            listFields.Add(Staff);
+            listFields.Add(Staffbt);
+            listFields.Add(Staffst);
             listFields.Add(Citizen);
             listFields.Add(BlockManager);
             return listFields;

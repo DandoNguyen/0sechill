@@ -42,6 +42,8 @@ namespace _0sechill.Models
         public ICollection<AssignIssue> assignIssues { get; set; }
         public ICollection<Message> Messages { get; set; }
         public ICollection<Room> chatRooms { get; set; }
+        public ICollection<BookingTask> bookingTasks { get; set; }
+        public ICollection<Vote> votes { get; set; }
 
         #endregion
     }

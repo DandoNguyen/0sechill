@@ -28,6 +28,7 @@ namespace _0sechill.Models.IssueManagement
         public virtual ICollection<FilePath> files { get; set; }
         public virtual ICollection<Comments> comments { get; set; }
         public virtual ICollection<LookUpTable> listCateLookUp { get; set; }
+        public virtual ICollection<Vote> votes { get; set; }
         public virtual LookUpTable statusLookUp { get; set; }
 
         //On new Object event
