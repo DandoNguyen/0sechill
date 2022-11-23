@@ -5,7 +5,7 @@
         public static string Admin = "admin";
         public static string Staffbt = "staffbt";
         public static string Staffst = "staffst";
-        public static string Citizen = "citizen";
+        public static string Citizen = "resident";
         public static string BlockManager = "blockManager";
 
         public static List<string> GetFields()
