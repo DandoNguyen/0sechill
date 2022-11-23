@@ -11,5 +11,10 @@ namespace _0sechill.Dto.FE003.Request
         public List<IFormFile> listFiles { get; set; }
         public List<string> listCateID { get; set; }
 
+        public CreateIssueDto()
+        {
+            listCateID = new List<string>();
+        }
+
     }
 }

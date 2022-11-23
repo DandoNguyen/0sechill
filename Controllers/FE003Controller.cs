@@ -46,6 +46,17 @@ namespace _0sechill.Controllers
         }
 
         /// <summary>
+        /// Get All Category string
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        [HttpGet, Route("GetAllCate")]
+        public async Task<IActionResult> getAllCateAsync()
+        {
+            return Ok(await context.categories.ToListAsync());
+        }
+
+        /// <summary>
         /// Get All Issues
         /// </summary>
         /// <param name="dateTime">Start Date search</param>
@@ -99,7 +110,7 @@ namespace _0sechill.Controllers
         /// <param name="dto"></param>
         /// <returns>Http response</returns>
         [HttpPost, Route("AddNewIssue")]
-        public async Task<IActionResult> addNewIssues(CreateIssueDto dto)
+        public async Task<IActionResult> addNewIssues([FromForm]CreateIssueDto dto)
         {
             var user = new ApplicationUser();
             var listCateFromLookUp = new List<LookUpTable>();
@@ -108,11 +119,16 @@ namespace _0sechill.Controllers
             //handling current user
             try
             {
-                user = await userManager.GetUserAsync(User);
+                user = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
             }
             catch (Exception)
             {
                 return BadRequest("Current User Not Found");
+            }
+
+            if (user is null)
+            {
+                return Unauthorized();
             }
             
             //handling content
@@ -167,11 +183,11 @@ namespace _0sechill.Controllers
             }
 
             //send notification to blockManager
-            var blockManagerEmail = user.block.blockManager.Email;
-            if (blockManagerEmail != null)
-            {
-                SendEmailAsync(newIssue, blockManagerEmail);
-            } 
+            //var blockManagerEmail = user.block.blockManager.Email;
+            //if (blockManagerEmail != null)
+            //{
+            //    SendEmailAsync(newIssue, blockManagerEmail);
+            //} 
 
             if (listFileUploadResult.Any())
             {

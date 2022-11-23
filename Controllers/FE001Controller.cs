@@ -47,7 +47,16 @@ namespace _0sechill.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetAllUser()
         {
-            return Ok(await userManager.Users.ToListAsync());
+            var listResults = new List<UserDto>();
+            var listUsers = await userManager.Users.ToListAsync();
+            foreach (var user in listUsers)
+            {
+                var userDto = new UserDto();
+                userDto = mapper.Map<UserDto>(user);
+                userDto.roleName = (List<string>) await userManager.GetRolesAsync(user);
+                listResults.Add(userDto);
+            }
+            return Ok(listResults);
         }
 
         /// <summary>
