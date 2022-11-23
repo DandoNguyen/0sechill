@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace _0sechill.Migrations
 {
-    public partial class db : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -286,6 +286,26 @@ namespace _0sechill.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "bookingTasks",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    DateOfBooking = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    TimeLevelOfBooking = table.Column<TimeOnly>(type: "TEXT", nullable: false),
+                    isAvailable = table.Column<bool>(type: "INTEGER", nullable: false),
+                    userID = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bookingTasks", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_bookingTasks_AspNetUsers_userID",
+                        column: x => x.userID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "chatMessages",
                 columns: table => new
                 {
@@ -313,37 +333,6 @@ namespace _0sechill.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "issues",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    title = table.Column<string>(type: "TEXT", nullable: true),
-                    content = table.Column<string>(type: "TEXT", nullable: true),
-                    status = table.Column<string>(type: "TEXT", nullable: true),
-                    feedback = table.Column<string>(type: "TEXT", nullable: true),
-                    createdDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    lastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    isPrivate = table.Column<bool>(type: "INTEGER", nullable: false),
-                    authorId = table.Column<string>(type: "TEXT", nullable: false),
-                    CategoryID = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_issues", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_issues_AspNetUsers_authorId",
-                        column: x => x.authorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_issues_categories_CategoryID",
-                        column: x => x.CategoryID,
-                        principalTable: "categories",
-                        principalColumn: "ID");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "apartments",
                 columns: table => new
                 {
@@ -366,89 +355,22 @@ namespace _0sechill.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "assignIssues",
+                name: "publicFacilities",
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    staffId = table.Column<string>(type: "TEXT", nullable: true),
-                    issueId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    isResolved = table.Column<bool>(type: "INTEGER", nullable: false),
-                    isConfirmedByAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
-                    isConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    staffFeedback = table.Column<string>(type: "TEXT", nullable: true)
+                    typeOfPublic = table.Column<string>(type: "TEXT", nullable: true),
+                    facilityCode = table.Column<string>(type: "TEXT", nullable: true),
+                    BookingTaskID = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_assignIssues", x => x.ID);
+                    table.PrimaryKey("PK_publicFacilities", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_assignIssues_AspNetUsers_staffId",
-                        column: x => x.staffId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_assignIssues_issues_issueId",
-                        column: x => x.issueId,
-                        principalTable: "issues",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "comments",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    content = table.Column<string>(type: "TEXT", nullable: true),
-                    isPrivate = table.Column<bool>(type: "INTEGER", nullable: false),
-                    isChild = table.Column<bool>(type: "INTEGER", nullable: false),
-                    parentId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    authorId = table.Column<string>(type: "TEXT", nullable: true),
-                    authorsId = table.Column<string>(type: "TEXT", nullable: true),
-                    issueId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    issuesID = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_comments", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_comments_AspNetUsers_authorsId",
-                        column: x => x.authorsId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_comments_issues_issuesID",
-                        column: x => x.issuesID,
-                        principalTable: "issues",
+                        name: "FK_publicFacilities_bookingTasks_BookingTaskID",
+                        column: x => x.BookingTaskID,
+                        principalTable: "bookingTasks",
                         principalColumn: "ID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "lookUp",
-                columns: table => new
-                {
-                    lookUpID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    lookUpTypeName = table.Column<string>(type: "TEXT", nullable: true),
-                    lookUpTypeCode = table.Column<string>(type: "TEXT", nullable: true),
-                    index = table.Column<string>(type: "TEXT", nullable: true),
-                    valueString = table.Column<string>(type: "TEXT", nullable: true),
-                    issueCateID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    issueStatusID = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_lookUp", x => x.lookUpID);
-                    table.ForeignKey(
-                        name: "FK_lookUp_issues_issueCateID",
-                        column: x => x.issueCateID,
-                        principalTable: "issues",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_lookUp_issues_issueStatusID",
-                        column: x => x.issueStatusID,
-                        principalTable: "issues",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -514,6 +436,52 @@ namespace _0sechill.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "assignIssues",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    staffId = table.Column<string>(type: "TEXT", nullable: true),
+                    issueId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    isResolved = table.Column<bool>(type: "INTEGER", nullable: false),
+                    isConfirmedByAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
+                    isConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
+                    staffFeedback = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_assignIssues", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_assignIssues_AspNetUsers_staffId",
+                        column: x => x.staffId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "comments",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    content = table.Column<string>(type: "TEXT", nullable: true),
+                    isPrivate = table.Column<bool>(type: "INTEGER", nullable: false),
+                    isChild = table.Column<bool>(type: "INTEGER", nullable: false),
+                    parentId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    authorId = table.Column<string>(type: "TEXT", nullable: true),
+                    authorsId = table.Column<string>(type: "TEXT", nullable: true),
+                    issueId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    issuesID = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_comments", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_comments_AspNetUsers_authorsId",
+                        column: x => x.authorsId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "filePaths",
                 columns: table => new
                 {
@@ -536,8 +504,80 @@ namespace _0sechill.Migrations
                         column: x => x.assignIssueID,
                         principalTable: "assignIssues",
                         principalColumn: "ID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "issues",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    title = table.Column<string>(type: "TEXT", nullable: true),
+                    content = table.Column<string>(type: "TEXT", nullable: true),
+                    status = table.Column<string>(type: "TEXT", nullable: true),
+                    feedback = table.Column<string>(type: "TEXT", nullable: true),
+                    createdDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    lastModifiedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    isPrivate = table.Column<bool>(type: "INTEGER", nullable: false),
+                    authorId = table.Column<string>(type: "TEXT", nullable: false),
+                    statusLookUplookUpID = table.Column<Guid>(type: "TEXT", nullable: true),
+                    CategoryID = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_issues", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_filePaths_issues_issuesID",
+                        name: "FK_issues_AspNetUsers_authorId",
+                        column: x => x.authorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_issues_categories_CategoryID",
+                        column: x => x.CategoryID,
+                        principalTable: "categories",
+                        principalColumn: "ID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "lookUp",
+                columns: table => new
+                {
+                    lookUpID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    lookUpTypeName = table.Column<string>(type: "TEXT", nullable: true),
+                    lookUpTypeCode = table.Column<string>(type: "TEXT", nullable: true),
+                    index = table.Column<string>(type: "TEXT", nullable: true),
+                    valueString = table.Column<string>(type: "TEXT", nullable: true),
+                    IssuesID = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_lookUp", x => x.lookUpID);
+                    table.ForeignKey(
+                        name: "FK_lookUp_issues_IssuesID",
+                        column: x => x.IssuesID,
+                        principalTable: "issues",
+                        principalColumn: "ID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "votes",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    IsVoteUp = table.Column<bool>(type: "INTEGER", nullable: false),
+                    issuesID = table.Column<Guid>(type: "TEXT", nullable: true),
+                    UserId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_votes", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_votes_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_votes_issues_issuesID",
                         column: x => x.issuesID,
                         principalTable: "issues",
                         principalColumn: "ID");
@@ -613,6 +653,11 @@ namespace _0sechill.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_bookingTasks_userID",
+                table: "bookingTasks",
+                column: "userID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_chatMessages_roomId",
                 table: "chatMessages",
                 column: "roomId");
@@ -658,15 +703,19 @@ namespace _0sechill.Migrations
                 column: "CategoryID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_lookUp_issueCateID",
-                table: "lookUp",
-                column: "issueCateID");
+                name: "IX_issues_statusLookUplookUpID",
+                table: "issues",
+                column: "statusLookUplookUpID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_lookUp_issueStatusID",
+                name: "IX_lookUp_IssuesID",
                 table: "lookUp",
-                column: "issueStatusID",
-                unique: true);
+                column: "IssuesID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_publicFacilities_BookingTaskID",
+                table: "publicFacilities",
+                column: "BookingTaskID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_rentalHistories_apartmentId",
@@ -687,10 +736,57 @@ namespace _0sechill.Migrations
                 name: "IX_userHistories_applicationUserId",
                 table: "userHistories",
                 column: "applicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_votes_issuesID",
+                table: "votes",
+                column: "issuesID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_votes_UserId",
+                table: "votes",
+                column: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_assignIssues_issues_issueId",
+                table: "assignIssues",
+                column: "issueId",
+                principalTable: "issues",
+                principalColumn: "ID",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_comments_issues_issuesID",
+                table: "comments",
+                column: "issuesID",
+                principalTable: "issues",
+                principalColumn: "ID");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_filePaths_issues_issuesID",
+                table: "filePaths",
+                column: "issuesID",
+                principalTable: "issues",
+                principalColumn: "ID");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_issues_lookUp_statusLookUplookUpID",
+                table: "issues",
+                column: "statusLookUplookUpID",
+                principalTable: "lookUp",
+                principalColumn: "lookUpID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_issues_AspNetUsers_authorId",
+                table: "issues");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_lookUp_issues_IssuesID",
+                table: "lookUp");
+
             migrationBuilder.DropTable(
                 name: "ApplicationUserRoom");
 
@@ -719,10 +815,10 @@ namespace _0sechill.Migrations
                 name: "filePaths");
 
             migrationBuilder.DropTable(
-                name: "lookUp");
+                name: "notifications");
 
             migrationBuilder.DropTable(
-                name: "notifications");
+                name: "publicFacilities");
 
             migrationBuilder.DropTable(
                 name: "rentalHistories");
@@ -734,6 +830,9 @@ namespace _0sechill.Migrations
                 name: "userHistories");
 
             migrationBuilder.DropTable(
+                name: "votes");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -743,22 +842,28 @@ namespace _0sechill.Migrations
                 name: "assignIssues");
 
             migrationBuilder.DropTable(
+                name: "bookingTasks");
+
+            migrationBuilder.DropTable(
                 name: "apartments");
 
             migrationBuilder.DropTable(
-                name: "issues");
-
-            migrationBuilder.DropTable(
                 name: "blocks");
-
-            migrationBuilder.DropTable(
-                name: "categories");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "departments");
+
+            migrationBuilder.DropTable(
+                name: "issues");
+
+            migrationBuilder.DropTable(
+                name: "categories");
+
+            migrationBuilder.DropTable(
+                name: "lookUp");
         }
     }
 }

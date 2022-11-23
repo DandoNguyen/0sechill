@@ -53,7 +53,13 @@ namespace _0sechill.Controllers
         [HttpGet, Route("GetAllCate")]
         public async Task<IActionResult> getAllCateAsync()
         {
-            return Ok(await context.categories.ToListAsync());
+            var listCateOld = await context.categories.ToListAsync();
+            var listCateNew = await context.lookUp.Where(x => x.lookUpTypeCode == "01").ToListAsync();
+            return Ok(new
+            {
+                listCateOld,
+                listCateNew
+            });
         }
 
         /// <summary>

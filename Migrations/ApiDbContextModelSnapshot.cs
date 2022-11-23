@@ -467,6 +467,9 @@ namespace _0sechill.Migrations
                     b.Property<string>("status")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("statusLookUplookUpID")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("title")
                         .HasColumnType("TEXT");
 
@@ -476,7 +479,33 @@ namespace _0sechill.Migrations
 
                     b.HasIndex("authorId");
 
+                    b.HasIndex("statusLookUplookUpID");
+
                     b.ToTable("issues");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.Vote", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsVoteUp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("issuesID")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("issuesID");
+
+                    b.ToTable("votes");
                 });
 
             modelBuilder.Entity("_0sechill.Models.LookUpData.LookUpTable", b =>
@@ -485,13 +514,10 @@ namespace _0sechill.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("IssuesID")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("index")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("issueCateID")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("issueStatusID")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("lookUpTypeCode")
@@ -505,10 +531,7 @@ namespace _0sechill.Migrations
 
                     b.HasKey("lookUpID");
 
-                    b.HasIndex("issueCateID");
-
-                    b.HasIndex("issueStatusID")
-                        .IsUnique();
+                    b.HasIndex("IssuesID");
 
                     b.ToTable("lookUp");
                 });
@@ -888,26 +911,35 @@ namespace _0sechill.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("_0sechill.Models.LookUpData.LookUpTable", "statusLookUp")
+                        .WithMany()
+                        .HasForeignKey("statusLookUplookUpID");
+
                     b.Navigation("author");
+
+                    b.Navigation("statusLookUp");
+                });
+
+            modelBuilder.Entity("_0sechill.Models.IssueManagement.Vote", b =>
+                {
+                    b.HasOne("_0sechill.Models.ApplicationUser", "User")
+                        .WithMany("votes")
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "issues")
+                        .WithMany("votes")
+                        .HasForeignKey("issuesID");
+
+                    b.Navigation("User");
+
+                    b.Navigation("issues");
                 });
 
             modelBuilder.Entity("_0sechill.Models.LookUpData.LookUpTable", b =>
                 {
-                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "issuesCate")
+                    b.HasOne("_0sechill.Models.IssueManagement.Issues", null)
                         .WithMany("listCateLookUp")
-                        .HasForeignKey("issueCateID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("_0sechill.Models.IssueManagement.Issues", "IssuesStatus")
-                        .WithOne("statusLookUp")
-                        .HasForeignKey("_0sechill.Models.LookUpData.LookUpTable", "issueStatusID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("IssuesStatus");
-
-                    b.Navigation("issuesCate");
+                        .HasForeignKey("IssuesID");
                 });
 
             modelBuilder.Entity("_0sechill.Models.RentalHistory", b =>
@@ -1040,6 +1072,8 @@ namespace _0sechill.Migrations
                     b.Navigation("issues");
 
                     b.Navigation("userHistories");
+
+                    b.Navigation("votes");
                 });
 
             modelBuilder.Entity("_0sechill.Models.Block", b =>
@@ -1072,7 +1106,7 @@ namespace _0sechill.Migrations
 
                     b.Navigation("listCateLookUp");
 
-                    b.Navigation("statusLookUp");
+                    b.Navigation("votes");
                 });
 #pragma warning restore 612, 618
         }

@@ -40,21 +40,68 @@ namespace _0sechill.Controllers
         #region Endpoints
 
         /// <summary>
+        /// This method is to enable or disable a user
+        /// </summary>
+        /// <param name="UserID"></param>
+        /// <param name="EnableOrDisable"></param>
+        /// <returns></returns>
+        [HttpPost, Route("EnableOrDisableUser")]
+        public async Task<IActionResult> ActivateUser(string UserID, bool EnableOrDisable)
+        {
+            var user = await userManager.FindByIdAsync(UserID);
+            if (user is null)
+            {
+                return BadRequest("User not found");
+            }
+
+            if (EnableOrDisable)
+            {
+                if (user.isActive)
+                {
+                    return Ok("User is already active");
+                } 
+                else
+                {
+                    user.isActive = false;
+                    await context.SaveChangesAsync();
+                    return Ok("User Disabled");
+                }
+            }
+            else
+            {
+                if (!user.isActive)
+                {
+                    return Ok("User is already disabled");
+                } 
+                else
+                {
+                    user.isActive = true;
+                    await context.SaveChangesAsync();
+                    return Ok("User Avtivated");
+                }
+            }
+            
+        }
+
+        /// <summary>
         /// return all user as array
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("GetAllUser")]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> GetAllUser()
+        public async Task<IActionResult> GetAllUser(bool getActive)
         {
             var listResults = new List<UserDto>();
             var listUsers = await userManager.Users.ToListAsync();
             foreach (var user in listUsers)
             {
-                var userDto = new UserDto();
-                userDto = mapper.Map<UserDto>(user);
-                userDto.roleName = (List<string>) await userManager.GetRolesAsync(user);
-                listResults.Add(userDto);
+                if (user.isActive.Equals(getActive))
+                {
+                    var userDto = new UserDto();
+                    userDto = mapper.Map<UserDto>(user);
+                    userDto.roleName = (List<string>)await userManager.GetRolesAsync(user);
+                    listResults.Add(userDto);
+                }
             }
             return Ok(listResults);
         }
