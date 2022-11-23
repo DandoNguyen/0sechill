@@ -27,15 +27,6 @@ namespace _0sechill.Data
                 .WithOne(b => b.Issue)
                 .HasForeignKey<AssignIssue>(b => b.issueId);
 
-            modelBuilder.Entity<LookUpTable>()
-                .HasOne(a => a.issuesCate)
-                .WithMany(b => b.listCateLookUp)
-                .HasForeignKey(b => b.issueCateID);
-
-            modelBuilder.Entity<Issues>()
-                .HasOne(a => a.statusLookUp)
-                .WithOne(b => b.IssuesStatus)
-                .HasForeignKey<LookUpTable>(b => b.issueStatusID);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -12,7 +12,7 @@ namespace _0sechill.Models
         public string firstName { get; set; }
         public string lastName { get; set; }
         public DateTime DOB { get; set; }
-
+        public bool isActive { get; set; }
         public int age { get; set; }
         public bool isMale { get; set; }
         public string IDType { get; set; }
@@ -46,5 +46,10 @@ namespace _0sechill.Models
         public ICollection<Vote> votes { get; set; }
 
         #endregion
+
+        public ApplicationUser()
+        {
+            isActive = true;
+        }
     }
 }
