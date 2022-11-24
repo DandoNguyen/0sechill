@@ -2,6 +2,7 @@
 using _0sechill.Dto;
 using _0sechill.Dto.FE002.Request;
 using _0sechill.Models;
+using _0sechill.Static;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -102,10 +103,14 @@ namespace _0sechill.Controllers
                 {
                     var registerResult = await userManager.CreateAsync(newEmployee, autoPassword);
 
-                    //if (!dto.isStaff)
-                    //{
-                    //    newEmployee.
-                    //}
+                    if (!dto.isStaff)
+                    {
+                        var role = await roleManager.FindByIdAsync(dto.roleID);
+                        if (!role.Name.Equals(UserRole.Citizen))
+                        {
+                            return BadRequest($"{role.Name} cannot be assigned to a resident Account");
+                        }
+                    }
 
                     if (!registerResult.Succeeded)
                     {
