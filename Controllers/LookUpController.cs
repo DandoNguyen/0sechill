@@ -30,6 +30,27 @@ namespace _0sechill.Controllers
         }
 
         /// <summary>
+        /// Get All Category string
+        /// </summary>
+        /// <returns></returns>
+        /// 
+        [HttpGet, Route("GetAllLookUp")]
+        public async Task<IActionResult> getAllLookUpAsync()
+        {
+            var listPhoneCode = await context.lookUp.Where(x => x.lookUpTypeCode == "02").ToListAsync();
+            var listCate = await context.lookUp.Where(x => x.lookUpTypeCode == "01").ToListAsync();
+            var listNationality = await context.lookUp.Where(x => x.lookUpTypeCode == "04").ToListAsync();
+            var listGender = await context.lookUp.Where(x => x.lookUpTypeCode == "03").ToListAsync();
+            return Ok(new
+            {
+                listPhoneCode,
+                listCate,
+                listNationality,
+                listGender
+            });
+        }
+
+        /// <summary>
         /// this endpoints is to import look up data for the system
         /// </summary>
         /// <param name="file">excel file contains look up data</param>

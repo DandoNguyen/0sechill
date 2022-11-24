@@ -2,7 +2,7 @@
 
 namespace _0sechill.Models
 {
-    public class UserHistory
+    public class UserHistory // hop dong
     {
         [Key]
         public Guid userHistoryId { get; set; }
