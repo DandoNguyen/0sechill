@@ -26,7 +26,7 @@ namespace _0sechill.Models
         public ApplicationUser applicationUser { get; set; }
         public Guid userId { get; set; }
 
-        public Apartment apartment { get; set; }
+        public ICollection<Apartment> apartment { get; set; }
         public Guid apartmentId { get; set; }
     }
 }

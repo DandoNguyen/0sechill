@@ -15,6 +15,6 @@ namespace _0sechill.Models
         public Block block { get; set; }
         [Required]
         public Guid blockId { get; set; }
-        public ICollection<UserHistory> userHistories { get; set; }
+        public UserHistory userHistories { get; set; }
     }
 }
