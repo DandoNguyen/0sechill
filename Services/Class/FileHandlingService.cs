@@ -67,41 +67,22 @@ namespace _0sechill.Services.Class
                 }
 
                 //Config Final file Path under newRootPath
-                var finalPath = Path.Combine(newRootPath, MakeValidFileName(formFile.Name));
+                var finalPath = Path.Combine(newRootPath, MakeValidFileName(formFile.Name) + Path.GetExtension(formFile.Name));
 
                 //try copy to Directory
-                try
-                {
-                    using (var fileStream = new FileStream(finalPath, FileMode.OpenOrCreate))
-                    {
-                        await formFile.CopyToAsync(fileStream);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex.Message);
-                    return new UploadFileResultDto()
-                    {
-                        isSucceeded = false,
-                        message = $"Error in saving file {formFile.Name}: {ex.Message}"
-                    };
-                }
+
+                await using FileStream fs = new FileStream(finalPath, FileMode.Create);
+                await formFile.CopyToAsync(fs);
+
+                //using (var fileStream = new FileStream(finalPath, FileMode.OpenOrCreate))
+                //{
+                //    await formFile.CopyToAsync(fileStream);
+                //}
 
                 //Create new File model Object
                 var newFile = new FilePath();
 
-                switch (rootPath)
-                {
-                    case "App_Data\\FilePaths":
-                        newFile.issues = await context.FindAsync<Issues>(Guid.Parse(ownerId));
-                        break;
-                    case "App_Data\\Avatar":
-                        newFile.users = await userManager.FindByIdAsync(ownerId);
-                        break;
-                    case "App_Data\\AssignIssueResult":
-                        newFile.assignIssue = await context.FindAsync<AssignIssue>(Guid.Parse(ownerId));
-                        break;
-                }
+                newFile.ownerID = ownerId;
                 newFile.filePath = finalPath;
 
                 try

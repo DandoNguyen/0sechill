@@ -80,7 +80,13 @@ namespace _0sechill.Controllers
             resultDto result = new resultDto();
             try
             {
-                
+                if (!dto.isStaff)
+                {
+                    if (dto.apartmentID is null)
+                    {
+                        return BadRequest("Apartment must not be empty");
+                    }
+                }
                 var newEmployee = mapper.Map<ApplicationUser>(dto);
                 var nameArray = dto.fullname.Split(" ");
                 newEmployee.lastName = nameArray[0];
@@ -95,6 +101,12 @@ namespace _0sechill.Controllers
                 try
                 {
                     var registerResult = await userManager.CreateAsync(newEmployee, autoPassword);
+
+                    //if (!dto.isStaff)
+                    //{
+                    //    newEmployee.
+                    //}
+
                     if (!registerResult.Succeeded)
                     {
                         result.isSuccess = registerResult.Succeeded;
@@ -126,6 +138,7 @@ namespace _0sechill.Controllers
 
             return Ok(result);
         }
+
 
         private async Task<bool> AssignEmployeeToRole(ApplicationUser employee, string roleID)
         {

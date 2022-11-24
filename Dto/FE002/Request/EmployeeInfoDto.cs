@@ -1,4 +1,6 @@
-﻿namespace _0sechill.Dto.FE002.Request
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace _0sechill.Dto.FE002.Request
 {
     public class EmployeeInfoDto
     {
@@ -16,6 +18,9 @@
         public string Email { get; set; }
         public string phoneCountryCode { get; set; }
         public string PhoneNumber { get; set; }
+        public string apartmentID { get; set; }
+        [Required]
+        public bool isStaff { get; set; }
 
     }
 }

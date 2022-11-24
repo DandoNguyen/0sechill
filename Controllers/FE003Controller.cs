@@ -45,23 +45,7 @@ namespace _0sechill.Controllers
             this.mailService = mailService;
         }
 
-        /// <summary>
-        /// Get All Category string
-        /// </summary>
-        /// <returns></returns>
-        /// 
-        [HttpGet, Route("GetAllCate")]
-        public async Task<IActionResult> getAllCateAsync()
-        {
-            var listCateOld = await context.categories.ToListAsync();
-            var listCateNew = await context.lookUp.Where(x => x.lookUpTypeCode == "01").ToListAsync();
-            return Ok(new
-            {
-                listCateOld,
-                listCateNew
-            });
-        }
-
+        
         /// <summary>
         /// Get All Issues
         /// </summary>
