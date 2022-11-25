@@ -48,6 +48,7 @@ namespace _0sechill.Controllers
         [HttpPost, Route("EnableOrDisableUser")]
         public async Task<IActionResult> ActivateUser(string UserID, bool EnableOrDisable)
         {
+            //Prevent Frontend dipshit from sending his own logged in UserID to this endpoint
             var loggedInUser = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
             if (loggedInUser is not null && loggedInUser.Id.Equals(UserID))
             {
