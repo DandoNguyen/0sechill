@@ -55,18 +55,12 @@ namespace _0sechill.Controllers
         /// <returns>Http Response</returns>
         [HttpGet, Route("GetAllIssues")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllIssues(DateTime dateTime)
+        public async Task<IActionResult> GetAllIssues()
         {
-            if (dateTime == DateTime.MinValue)
-            {
-                dateTime = DateTime.Now;
-            }
             var listIssues = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.listCateLookUp)
-                .Include(x => x.files)
-                .Where(x => x.lastModifiedDate.Date <= dateTime.Date)
-                .Take(10).ToListAsync();
+                .Include(x => x.files).ToListAsync();
 
             var listIssueDto = new List<IssueDto>();
             listIssueDto = mapper.Map<List<IssueDto>>(listIssues);
@@ -91,8 +85,7 @@ namespace _0sechill.Controllers
 
             return Ok(new GetAllIssueDto
             {
-                listIssue = listIssueDto,
-                searchDate = dateTime
+                listIssue = listIssueDto
             });
         }
 
