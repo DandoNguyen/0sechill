@@ -28,6 +28,8 @@ namespace _0sechill.Controllers
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
         private readonly IMailService mailService;
+        private readonly string NEW_LOOKUP_STATUS_CODE = "03";
+        private readonly string NEW_STRING = "new";
 
         public FE003Controller(
             ApiDbContext context,
@@ -120,9 +122,14 @@ namespace _0sechill.Controllers
             {
                 return Unauthorized();
             }
-            
+
             //handling content
+            var statusNew = await context.lookUp
+                .Where(x => x.lookUpTypeCode.Equals(NEW_LOOKUP_STATUS_CODE))
+                .Select(x => x.valueString).FirstOrDefaultAsync();
+
             var newIssue = new Issues();
+            newIssue.status = (statusNew is not null && statusNew.Trim().ToLower().Equals(NEW_STRING)) ? statusNew : string.Empty;
             newIssue.content = dto.content;
             newIssue.isPrivate = dto.isPrivate;
             newIssue.author = user;
