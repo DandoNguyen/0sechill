@@ -48,6 +48,12 @@ namespace _0sechill.Controllers
         [HttpPost, Route("EnableOrDisableUser")]
         public async Task<IActionResult> ActivateUser(string UserID, bool EnableOrDisable)
         {
+            var loggedInUser = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
+            if (loggedInUser is not null && loggedInUser.Id.Equals(UserID))
+            {
+                return BadRequest("Djtmemay Nam :) del phai ID cua m");
+            }
+
             var user = await userManager.FindByIdAsync(UserID);
             if (user is null)
             {
