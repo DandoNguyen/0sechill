@@ -173,11 +173,25 @@ namespace _0sechill.Controllers
             }
 
             //send notification to blockManager
-            //var blockManagerEmail = user.block.blockManager.Email;
-            //if (blockManagerEmail != null)
-            //{
-            //    SendEmailAsync(newIssue, blockManagerEmail);
-            //} 
+            var blockid = await context.apartments
+                .Include(x => x.userHistories)
+                .Where(x => x.userHistories.applicationUser.Id.Equals(user.Id))
+                .Select(x => x.blockId.ToString()).FirstOrDefaultAsync();
+
+            var existBlock = new Block();
+
+            if (blockid is not null)
+            {
+                existBlock = await context.blocks
+                    .Include(x => x.blockManager)
+                    .Where(x => x.blockId.Equals(Guid.Parse(blockid))).FirstOrDefaultAsync();
+            }
+
+
+            if (existBlock != null)
+            {
+                SendEmailAsync(newIssue, existBlock.blockManager.Email);
+            }
 
             if (listFileUploadResult.Any())
             {
