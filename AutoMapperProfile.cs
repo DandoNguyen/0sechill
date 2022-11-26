@@ -1,6 +1,7 @@
 ﻿using _0sechill.Dto.Apartment.Request;
 using _0sechill.Dto.Apartment.Response;
 using _0sechill.Dto.Block.Response;
+using _0sechill.Dto.Contract.Request;
 using _0sechill.Dto.FE001.Model;
 using _0sechill.Dto.FE001.Response;
 using _0sechill.Dto.FE002.Request;
@@ -69,6 +70,10 @@ namespace _0sechill
             CreateMap<UpdateUserDto, ApplicationUser>();
             CreateMap<ApplicationUser, userProfileDto>();
             CreateMap<ApplicationUser, userProfileDto>().ReverseMap();
+
+            //Contract 
+            CreateMap<AddNewContractDto, UserHistory>();
+                
         }
     }
 }
