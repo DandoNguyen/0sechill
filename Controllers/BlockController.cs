@@ -64,7 +64,9 @@ namespace _0sechill.Controllers
         [HttpGet, Route("GetAllBlock")]
         public async Task<IActionResult> GetAllBlockAsync()
         {
-            var listBlock = await context.blocks.ToListAsync();
+            var listBlock = await context.blocks
+                .Include(x => x.blockManager)
+                .ToListAsync();
             if (listBlock.Count.Equals(0))
             {
                 return BadRequest("No Block Available");
@@ -73,7 +75,18 @@ namespace _0sechill.Controllers
             foreach (var block in listBlock)
             {
                 var blockDto = mapper.Map<BlockDto>(block);
-                blockDto.blockManager = block.blockManager.UserName.ToString();
+
+                var managerUserName = string.Empty;
+                try
+                {
+                    managerUserName = block.blockManager.UserName.ToString();
+                }
+                catch (Exception)
+                {
+                    managerUserName = string.Empty;
+                }
+
+                blockDto.blockManager = managerUserName;
                 listBlockDto.Add(blockDto);
             }
             return Ok(listBlockDto);

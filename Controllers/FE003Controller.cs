@@ -190,7 +190,20 @@ namespace _0sechill.Controllers
 
             if (existBlock != null)
             {
-                SendEmailAsync(newIssue, existBlock.blockManager.Email);
+                var managerEmail = string.Empty;
+                try
+                {
+                    managerEmail = existBlock.blockManager.Email;
+                }
+                catch (Exception)
+                {
+                    managerEmail = string.Empty;
+                }
+
+                if (!string.IsNullOrEmpty(managerEmail))
+                {
+                    SendEmailAsync(newIssue, existBlock.blockManager.Email);
+                }
             }
 
             if (listFileUploadResult.Any())
