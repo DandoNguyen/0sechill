@@ -28,6 +28,8 @@ namespace _0sechill.Controllers
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
         private readonly IMailService mailService;
+        private readonly string NEW_LOOKUP_STATUS_CODE = "03";
+        private readonly string NEW_STRING = "new";
 
         public FE003Controller(
             ApiDbContext context,
@@ -53,18 +55,12 @@ namespace _0sechill.Controllers
         /// <returns>Http Response</returns>
         [HttpGet, Route("GetAllIssues")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllIssues(DateTime dateTime)
+        public async Task<IActionResult> GetAllIssues()
         {
-            if (dateTime == DateTime.MinValue)
-            {
-                dateTime = DateTime.Now;
-            }
             var listIssues = await context.issues
                 .Include(x => x.author)
                 .Include(x => x.listCateLookUp)
-                .Include(x => x.files)
-                .Where(x => x.lastModifiedDate.Date <= dateTime.Date)
-                .Take(10).ToListAsync();
+                .Include(x => x.files).ToListAsync();
 
             var listIssueDto = new List<IssueDto>();
             listIssueDto = mapper.Map<List<IssueDto>>(listIssues);
@@ -89,8 +85,7 @@ namespace _0sechill.Controllers
 
             return Ok(new GetAllIssueDto
             {
-                listIssue = listIssueDto,
-                searchDate = dateTime
+                listIssue = listIssueDto
             });
         }
 
@@ -120,9 +115,14 @@ namespace _0sechill.Controllers
             {
                 return Unauthorized();
             }
-            
+
             //handling content
+            var statusNew = await context.lookUp
+                .Where(x => x.lookUpTypeCode.Equals(NEW_LOOKUP_STATUS_CODE))
+                .Select(x => x.valueString).FirstOrDefaultAsync();
+
             var newIssue = new Issues();
+            newIssue.status = (statusNew is not null && statusNew.Trim().ToLower().Equals(NEW_STRING)) ? statusNew : string.Empty;
             newIssue.content = dto.content;
             newIssue.isPrivate = dto.isPrivate;
             newIssue.author = user;
@@ -173,11 +173,25 @@ namespace _0sechill.Controllers
             }
 
             //send notification to blockManager
-            //var blockManagerEmail = user.block.blockManager.Email;
-            //if (blockManagerEmail != null)
-            //{
-            //    SendEmailAsync(newIssue, blockManagerEmail);
-            //} 
+            var blockid = await context.apartments
+                .Include(x => x.userHistories)
+                .Where(x => x.userHistories.applicationUser.Id.Equals(user.Id))
+                .Select(x => x.blockId.ToString()).FirstOrDefaultAsync();
+
+            var existBlock = new Block();
+
+            if (blockid is not null)
+            {
+                existBlock = await context.blocks
+                    .Include(x => x.blockManager)
+                    .Where(x => x.blockId.Equals(Guid.Parse(blockid))).FirstOrDefaultAsync();
+            }
+
+
+            if (existBlock != null)
+            {
+                SendEmailAsync(newIssue, existBlock.blockManager.Email);
+            }
 
             if (listFileUploadResult.Any())
             {

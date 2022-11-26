@@ -11,6 +11,7 @@ namespace _0sechill.Models.IssueManagement
         public string content { get; set; }
         public string status { get; set; }
         public string feedback { get; set; }
+        public int priorityLevel { get; set; }
 
         //TimeStamps
         public DateTime createdDate { get; set; }
@@ -38,6 +39,7 @@ namespace _0sechill.Models.IssueManagement
             createdDate = DateTime.Today;
             lastModifiedDate = DateTime.Today;
             feedback = string.Empty;
+            priorityLevel = 0;
         }
     }
 }

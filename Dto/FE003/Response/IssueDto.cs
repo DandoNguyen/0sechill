@@ -6,6 +6,7 @@
         public string title { get; set; }
         public string content { get; set; }
         public string status { get; set; }
+        public int priorityLevel { get; set; }
         public string feedback { get; set; }
         public DateTime createdDate { get; set; }
         public DateTime lastModifiedDate { get; set; }
