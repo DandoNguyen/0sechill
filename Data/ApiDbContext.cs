@@ -22,10 +22,10 @@ namespace _0sechill.Data
                 .WithOne(b => b.blockManager)
                 .HasForeignKey<Block>(b => b.blockManagerId);
 
-            modelBuilder.Entity<Issues>()
-                .HasOne(a => a.assignIssue)
-                .WithOne(b => b.Issue)
-                .HasForeignKey<AssignIssue>(b => b.issueId);
+            //modelBuilder.Entity<Issues>()
+            //    .HasOne(a => a.assignIssue)
+            //    .WithOne(b => b.Issue)
+            //    .HasForeignKey<AssignIssue>(b => b.issueId);
 
 
             base.OnModelCreating(modelBuilder);
