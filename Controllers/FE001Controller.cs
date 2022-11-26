@@ -61,30 +61,30 @@ namespace _0sechill.Controllers
                 return BadRequest("User not found");
             }
 
-            if (EnableOrDisable)
+            if (!EnableOrDisable)
             {
                 if (user.isActive)
                 {
-                    return Ok("User is already active");
+                    user.isActive = EnableOrDisable;
+                    await context.SaveChangesAsync();
+                    return Ok("User Disabled");
                 } 
                 else
                 {
-                    user.isActive = false;
-                    await context.SaveChangesAsync();
-                    return Ok("User Disabled");
+                    return Ok("User is already disabled");
                 }
             }
             else
             {
-                if (!user.isActive)
+                if (user.isActive)
                 {
-                    return Ok("User is already disabled");
+                    return Ok("User is already enabled");
                 } 
                 else
                 {
-                    user.isActive = true;
+                    user.isActive = EnableOrDisable;
                     await context.SaveChangesAsync();
-                    return Ok("User Avtivated");
+                    return Ok("User Activated");
                 }
             }
             
