@@ -20,4 +20,4 @@ dotnet ef database update
 ```
 
 ## Look Up 
-Add Look Up Data with this [excel file]( https://mega.nz/file/R1cHXBZJ#UKZP7XJQC1OboVcgZ8wkCrj1n1E_7sIVP5yxjvPNGt8)
+Add Look Up Data with this [excel file](https://mega.nz/file/55MAhL4D#Qj_bMHaprKeGx4qAI0uuN9Z0WpXSjL3MW2fvIuClkGo)
