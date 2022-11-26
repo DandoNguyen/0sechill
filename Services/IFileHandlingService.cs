@@ -13,5 +13,6 @@ namespace _0sechill.Services
         /// <returns>return <paramref name="UploadFileResultDto"/></returns>
         Task<UploadFileResultDto> UploadFile(IFormFile formFile, string ownerId, string rootPath);
         Task RemoveFiles(string fileId);
+        Task<List<string>> getListPaths(string ownerID);
     }
 }

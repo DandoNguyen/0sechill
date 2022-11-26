@@ -6,6 +6,7 @@ using _0sechill.Dto.FE001.Response;
 using _0sechill.Dto.FE002.Request;
 using _0sechill.Dto.FE003.Request;
 using _0sechill.Dto.FE003.Response;
+using _0sechill.Dto.FE006.Response;
 using _0sechill.Dto.UserDto.Request;
 using _0sechill.Dto.UserDto.Response;
 using _0sechill.Hubs.Dto.Response;
@@ -48,6 +49,11 @@ namespace _0sechill
                 .ForMember(dest => dest.ID, opt => opt.MapFrom(src => src.ID.ToString()))
                 .ForMember(dest => dest.authorName, opt => opt.MapFrom(src => src.author.lastName + src.author.firstName))
                 .ForMember(dest => dest.status, opt => opt.MapFrom(src => src.statusLookUp.valueString));
+
+            //FE006
+            CreateMap<AssignIssue, IssueStaffDto>()
+                .ForMember(dest => dest.AssignIssueID, opt => opt.MapFrom(src => src.ID.ToString()))
+                .ForMember(dest => dest.staffId, opt => opt.MapFrom(src => src.staff.Id));
 
             //Message
             CreateMap<Message, MessageResponseDto>().ForMember(x => x.username, opt => opt.MapFrom(x => x.User.UserName));

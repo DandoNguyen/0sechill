@@ -13,7 +13,6 @@ namespace _0sechill.Models.IssueManagement
         public virtual Issues Issue { get; set; }
         public bool isResolved { get; set; }
         public bool isConfirmedByAdmin { get; set; }
-        public ICollection<FilePath> files { get; set; }
         public bool isConfirmed { get; set; }
         public string staffFeedback { get; set; }
 

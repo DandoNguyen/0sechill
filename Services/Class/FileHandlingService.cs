@@ -163,5 +163,13 @@ namespace _0sechill.Services.Class
             var newString = System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, "_").ToString();
             return newString;
         }
+
+        public async Task<List<string>> getListPaths(string ownerID)
+        {
+            return await context.filePaths
+                .Where(x => x.ID.Equals(Guid.Parse(ownerID)))
+                .Select(x => x.filePath)
+                .ToListAsync();
+        }
     }
 }
