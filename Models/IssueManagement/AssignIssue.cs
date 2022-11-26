@@ -9,8 +9,8 @@ namespace _0sechill.Models.IssueManagement
         public Guid ID { get; set; }
         public string staffId { get; set; }
         public ApplicationUser staff { get; set; }
-        public string issueId { get; set; }
-        public Issues Issue { get; set; }
+        [ForeignKey("IssueID")]
+        public virtual Issues Issue { get; set; }
         public bool isResolved { get; set; }
         public bool isConfirmedByAdmin { get; set; }
         public ICollection<FilePath> files { get; set; }

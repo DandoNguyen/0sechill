@@ -92,7 +92,7 @@ namespace _0sechill.Controllers
             }
 
             var assignIssue = await context.assignIssues
-                .Where(x => x.issueId.Equals(issue))
+                .Where(x => x.Issue.Equals(issue))
                 .FirstOrDefaultAsync();
             var user = await userManager.FindByIdAsync(User.FindFirst("ID").Value);
 
@@ -181,7 +181,6 @@ namespace _0sechill.Controllers
             newAssignIssue.staffId = staff.Id;
             newAssignIssue.staff = staff;
 
-            newAssignIssue.issueId = issue.ID.ToString();
             newAssignIssue.Issue = issue;
             newAssignIssue.isConfirmedByAdmin = true;
 

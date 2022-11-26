@@ -1,5 +1,6 @@
 ﻿using _0sechill.Models.LookUpData;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace _0sechill.Models.IssueManagement
 {
