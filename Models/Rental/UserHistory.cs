@@ -11,7 +11,7 @@ namespace _0sechill.Models
         [Required]
         public DateOnly endDate { get; set; }
         [Required]
-        public DateOnly lastSignedDate { get; set; } = DateOnly.FromDateTime(new DateTime());
+        public DateOnly lastSignedDate { get; set; } 
         [Required]
         public string status { get; set; }
 
@@ -28,5 +28,11 @@ namespace _0sechill.Models
 
         public ICollection<Apartment> apartment { get; set; }
         public Guid apartmentId { get; set; }
+
+        public UserHistory()
+        {
+            userHistoryId = Guid.NewGuid();
+            lastSignedDate = DateOnly.FromDateTime(new DateTime());
+        }
     }
 }

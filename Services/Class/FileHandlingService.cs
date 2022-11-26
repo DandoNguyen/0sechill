@@ -67,17 +67,17 @@ namespace _0sechill.Services.Class
                 }
 
                 //Config Final file Path under newRootPath
-                var finalPath = Path.Combine(newRootPath, MakeValidFileName(formFile.Name) + Path.GetExtension(formFile.Name));
+                var finalPath = Path.Combine(newRootPath, MakeValidFileName(formFile.FileName));
 
                 //try copy to Directory
 
-                await using FileStream fs = new FileStream(finalPath, FileMode.Create);
-                await formFile.CopyToAsync(fs);
+                //await using FileStream fs = new FileStream(newRootPath, FileMode.OpenOrCreate);
+                //await formFile.CopyToAsync(fs);
 
-                //using (var fileStream = new FileStream(finalPath, FileMode.OpenOrCreate))
-                //{
-                //    await formFile.CopyToAsync(fileStream);
-                //}
+                using (var fileStream = new FileStream(finalPath, FileMode.OpenOrCreate))
+                {
+                    await formFile.CopyToAsync(fileStream);
+                }
 
                 //Create new File model Object
                 var newFile = new FilePath();
@@ -162,6 +162,14 @@ namespace _0sechill.Services.Class
             string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+) ", invalidChars);
             var newString = System.Text.RegularExpressions.Regex.Replace(name, invalidRegStr, "_").ToString();
             return newString;
+        }
+
+        public async Task<List<string>> getListPaths(string ownerID)
+        {
+            return await context.filePaths
+                .Where(x => x.ID.Equals(Guid.Parse(ownerID)))
+                .Select(x => x.filePath)
+                .ToListAsync();
         }
     }
 }

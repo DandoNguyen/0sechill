@@ -2,6 +2,7 @@
 using _0sechill.Dto.FE001.Response;
 using _0sechill.Dto.FE003.Response;
 using _0sechill.Dto.FE006.Request;
+using _0sechill.Dto.FE006.Response;
 using _0sechill.Dto.MailDto;
 using _0sechill.Models;
 using _0sechill.Models.IssueManagement;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 using System.Security.Claims;
 
 namespace _0sechill.Controllers
@@ -29,23 +31,152 @@ namespace _0sechill.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IMapper mapper;
         private readonly IMailService mailService;
+        private readonly IFileHandlingService fileHandlingService;
+        private readonly IConfiguration config;
         private readonly string STATUS_LOOKUP_CODE = "05";
         private readonly string STATUS_NEW_LOOKUP_INDEX = "03";
         private readonly string STATUS_PENDING_REVIEW_INDEX = "01";
         private readonly string STATUS_IN_PROGRESS_INDEX = "04";
+        private readonly string STATUS_DONE_INDEX = "02";
 
         public FE006Controller(
             ApiDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IMapper mapper,
-            IMailService mailService)
+            IMailService mailService,
+            IFileHandlingService fileHandlingService, 
+            IConfiguration config)
         {
             this.context = context;
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.mapper = mapper;
             this.mailService = mailService;
+            this.fileHandlingService = fileHandlingService;
+            this.config = config;
+        }
+
+        /// <summary>
+        /// this is the endpoint for admin or manager to check feedback from staff
+        /// </summary>
+        /// <param name="assignIssueID"></param>
+        /// <param name="isConfirmed"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> AdminConfirmResult(string assignIssueID, bool isConfirmed)
+        {
+            var existAssignedIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Where(x => x.ID.Equals(Guid.Parse(assignIssueID)))
+                .FirstOrDefaultAsync();
+            if (existAssignedIssue is null)
+            {
+                return BadRequest("Issue not found");
+            }
+
+            existAssignedIssue.isConfirmedByAdmin = isConfirmed;
+            if (isConfirmed)
+            {
+                var doneStatusString = await context.lookUp
+                    .Where(x => x.lookUpTypeCode.Equals(STATUS_LOOKUP_CODE))
+                    .Where(x => x.index.Equals(STATUS_DONE_INDEX))
+                    .Select(x => x.valueString).FirstOrDefaultAsync();
+                existAssignedIssue.Issue.status = doneStatusString is null ? "done" : doneStatusString;
+                context.assignIssues.Update(existAssignedIssue);
+                await context.SaveChangesAsync();
+                return Ok("Feedback Confirmed");
+            }
+            else
+            {
+                existAssignedIssue.isResolved = isConfirmed;
+                context.assignIssues.Update(existAssignedIssue);
+                await context.SaveChangesAsync();
+                return Ok("Feedback Rejected");
+            }
+        }
+
+        /// <summary>
+        /// this is the endpoint for admin and user to get all resolved Assigned issues
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet, Route("GetAllResolvedIssue")]
+        [Authorize(Roles = "admin, blockManager")]
+        public async Task<IActionResult> getAllResolvedIssue()
+        {
+            var listAssignIssue = new List<AssignIssue>();
+            listAssignIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Include(x => x.staff)
+                .Where(x => x.isResolved.Equals(true))
+                .ToListAsync();
+            var listResult = new List<IssueStaffDto>();
+            if (listAssignIssue.Any())
+            {
+                foreach (var assignIssue in listAssignIssue)
+                {
+                    var issueStaffDto = new IssueStaffDto();
+                    issueStaffDto = mapper.Map<IssueStaffDto>(assignIssue);
+                    issueStaffDto.listFileFromStaff = await fileHandlingService.getListPaths(assignIssue.ID.ToString());
+                    listResult.Add(issueStaffDto);
+                }
+            }
+
+            return Ok(listResult);
+        }
+
+        /// <summary>
+        /// this is the endpoints to add staff feedback to assigned issue
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        [HttpPost, Route("AddStaffFeedback")]
+        public async Task<IActionResult> AddStaffFeedBack([FromForm] StaffFeedbackDto dto)
+        {
+            var staff = await userManager.FindByIdAsync(User.FindFirst("ID").Value);
+            var existAssignIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Include(x => x.staff)
+                .Where(x => x.ID.Equals(Guid.Parse(dto.assignIssueID))).FirstOrDefaultAsync();
+
+            if (!staff.Id.Equals(existAssignIssue.staff.Id))
+            {
+                return Unauthorized();
+            }
+
+            var isSucceed = await updateStaffFeedback(dto, existAssignIssue);
+            if (isSucceed)
+            {
+                
+                return Ok("Update Succeed");
+            }
+
+            return Ok("Update Fail");
+        }
+
+        /// <summary>
+        /// this is the private function that update staff feedback and upload file
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <param name="existAssignIssue"></param>
+        /// <returns></returns>
+        private async Task<bool> updateStaffFeedback(StaffFeedbackDto dto, AssignIssue existAssignIssue)
+        {
+            existAssignIssue.staffFeedback = dto.staffFeedback;
+            existAssignIssue.isResolved = true;
+            context.assignIssues.Update(existAssignIssue);
+            foreach (var file in dto.listFiles)
+            {
+                try
+                {
+                    await fileHandlingService.UploadFile(file, existAssignIssue.ID.ToString(), config["FilePaths:AssignIssueResult"]);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+            await context.SaveChangesAsync();
+            return true;
         }
 
         /// <summary>

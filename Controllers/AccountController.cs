@@ -36,6 +36,7 @@ namespace _0sechill.Controllers
         {
             var listStaff = await context.ApplicationUser
                 .Where(x => x.role.Trim().ToLower().Equals(UserRole.Staffbt))
+                .Where(x => x.role.Trim().ToLower().Equals(UserRole.Staffst))
                 .ToListAsync();
             var listStaffDto = new List<StaffDto>();
             foreach (var staff in listStaff)
