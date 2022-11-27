@@ -41,17 +41,13 @@ namespace _0sechill.Controllers
             var weekDayValue = (int)DateFrom.DayOfWeek;
             if (weekDayValue != 1)
             {
-                return BadRequest("Invalid Start Date");
+                return BadRequest("Start Date must be on Monday");
             }
 
-            var listBookingDate = await context.bookingTasks.Where(x => x.DateOfBooking.ToDateTime(TimeOnly.MinValue).Ticks <= DateTo.Ticks
+            var listBookingDate = new List<BookingTask>();
+            listBookingDate = await context.bookingTasks.Where(x => x.DateOfBooking.ToDateTime(TimeOnly.MinValue).Ticks <= DateTo.Ticks
             && x.DateOfBooking.ToDateTime(TimeOnly.MinValue).Ticks >= DateFrom.Ticks)
                 .ToListAsync();
-
-            if (!listBookingDate.Any())
-            {
-                listBookingDate = await createNewSetOfBookingTask(DateFrom, DateTo);
-            }
 
             return Ok(listBookingDate);
         }
@@ -64,7 +60,7 @@ namespace _0sechill.Controllers
         /// <param name="dateTimeOfBooking">the date and Time of the booking task</param>
         /// <returns></returns>
         [HttpPost, Route("AddNewBookingTask")]
-        public async Task<IActionResult> addNewBookingTask(string bookingTaskID, string facilityID, DateTime dateTimeOfBooking)
+        public async Task<IActionResult> addNewBookingTask(string facilityID, DateTime dateTimeOfBooking)
         {
             var user = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
             if (user is null)
@@ -76,54 +72,22 @@ namespace _0sechill.Controllers
             if (facility is null)
                 return BadRequest("Facility Not Found!");
 
-            var existBookingTask = await context.bookingTasks.FindAsync(Guid.Parse(bookingTaskID));
-            existBookingTask.isAvailable = false;
-            existBookingTask.PublicFacility.Add(facility);
-            existBookingTask.userID = user.Id;
-            existBookingTask.User = user;
-            existBookingTask.DateOfBooking = DateOnly.FromDateTime(dateTimeOfBooking);
-            existBookingTask.TimeLevelOfBooking = TimeOnly.FromDateTime(dateTimeOfBooking);
+            var newBookingTask = new BookingTask();
+            newBookingTask.isAvailable = false;
+            newBookingTask.PublicFacility.Add(facility);
+            newBookingTask.userID = user.Id;
+            newBookingTask.User = user;
+            newBookingTask.DateOfBooking = DateOnly.FromDateTime(dateTimeOfBooking);
+            newBookingTask.TimeLevelOfBooking = TimeOnly.FromDateTime(dateTimeOfBooking);
 
             if (ModelState.IsValid)
             {
-                context.bookingTasks.Update(existBookingTask);
+                await context.bookingTasks.AddAsync(newBookingTask);
                 await context.SaveChangesAsync();
                 return Ok("Booking Task received!");
             }
 
             return new JsonResult("Can't receive Booking Task") { StatusCode = 500 };
-        }
-
-        /// <summary>
-        /// this is the method that create a new set for a given range of date
-        /// </summary>
-        /// <param name="dateFrom">this is the start date of the date range</param>
-        /// <param name="dateTo">this is the end date of the date range</param>
-        /// <returns>List<BookingTask></returns>
-        private async Task<List<BookingTask>> createNewSetOfBookingTask(DateTime dateFrom, DateTime dateTo)
-        {
-            var listNewBookingTask = new List<BookingTask>();
-            for (DateTime indexDate = dateFrom; indexDate.Ticks <= dateTo.Ticks; indexDate.AddDays(1))
-            {
-                var newBookingTask = new BookingTask();
-                newBookingTask.DateOfBooking = DateOnly.FromDateTime(indexDate);
-                listNewBookingTask.Add(newBookingTask);
-            }
-
-            foreach (var item in listNewBookingTask)
-            {
-                if (await context.bookingTasks.FindAsync(item) is not null)
-                {
-                    context.bookingTasks.Update(item);
-                }
-                else
-                {
-                    await context.bookingTasks.AddAsync(item);
-                }
-            }
-
-            await context.SaveChangesAsync();
-            return listNewBookingTask;
         }
 
         /// <summary>
