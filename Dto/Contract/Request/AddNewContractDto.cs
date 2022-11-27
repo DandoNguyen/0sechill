@@ -11,7 +11,5 @@ namespace _0sechill.Dto.Contract.Request
         public DateOnly endDate { get; set; }
         [Required]
         public DateOnly lastSignedDate { get; set; }
-        [Required]
-        public string status { get; set; }
     }
 }

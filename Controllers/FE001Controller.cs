@@ -95,7 +95,7 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("GetAllUser")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin, blockManager")]
         public async Task<IActionResult> GetAllUser(bool getActive)
         {
             var listResults = new List<UserDto>();
@@ -125,83 +125,30 @@ namespace _0sechill.Controllers
             searchFilterResultDto response = new searchFilterResultDto();
             List<ApplicationUser> listUserResult = new List<ApplicationUser>();
             var searchQuery = userManager.Users.AsQueryable();
-            searchQuery = searchQuery.Where(user => user.firstName.Contains(dto.nameString) || user.lastName.Contains(dto.nameString));
+            searchQuery = searchQuery.Where(user => dto.fullName.Contains(user.firstName) || dto.fullName.Contains(user.lastName));
 
-            if (dto.hasGenderCheck)
+            if (dto.IDNumber is not null)
             {
-                searchQuery = searchQuery.Where(user => user.isMale.Equals(dto.isMale));
+                searchQuery = searchQuery.Where(user => user.IDNumber.Contains(dto.IDNumber));
             }
 
-            if (dto.hasAgeCheck)
+            if (dto.phoneCountryCode is not null && dto.PhoneNumber is not null)
             {
-                searchQuery = searchQuery.Where(user => user.age >= dto.ageFrom && user.age <= dto.ageTo);
+                searchQuery = searchQuery
+                    .Where(user => user.phoneCountryCode.Equals(dto.phoneCountryCode))
+                    .Where(user => user.PhoneNumber.Contains(dto.PhoneNumber));
             }
 
             try
             {
                 listUserResult = await searchQuery.ToListAsync();
-                response.isSucceed = true;
             }
             catch (Exception ex)
             {
-                response.error += $"\n{ex.Message}";
-                response.isSucceed = false;
-                
+                return BadRequest(ex.Message);
             }
 
-            if (dto.hasRoleCheck && listUserResult.Any())
-            {
-                if (dto.roleID is not null) 
-                {
-                    var role = await roleManager.FindByIdAsync(dto.roleID);
-                    foreach (var user in listUserResult)
-                    {
-                        var listRoles = await userManager.GetRolesAsync(user);
-
-                        if (listRoles.Contains(role.Name))
-                        {
-                            var userModel = mapper.Map<FE001UserModel>(user);
-                            userModel.listRoles = (List<string>) listRoles;
-                            response.result.Add(userModel);
-                        }
-                    }
-                }
-
-                else
-                {
-                    var role = await roleManager.FindByNameAsync(dto.roleName);
-
-                    foreach (var user in listUserResult)
-                    {
-                        var listRoles = await userManager.GetRolesAsync(user);
-
-                        if (listRoles.Contains(role.Name))
-                        {
-                            var userModel = mapper.Map<FE001UserModel>(user);
-                            userModel.listRoles = (List<string>)listRoles;
-                            response.result.Add(userModel);
-                        }
-                    }
-                }
-            }
-
-            else if (listUserResult.Any())
-            {
-                var listUserModel = new List<FE001UserModel>();
-                foreach (var user in listUserResult)
-                {
-                    var listRoles = await userManager.GetRolesAsync(user);
-
-                    var userModel = mapper.Map<FE001UserModel>(user);
-                    userModel.listRoles = (List<string>)listRoles;
-                    listUserModel.Add(userModel);
-                }
-
-                response.result = listUserModel;
-                response.isSucceed = true;
-            }
-
-            return Ok(response);
+            return Ok(listUserResult);
         }
 
         #endregion
