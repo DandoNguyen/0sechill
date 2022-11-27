@@ -83,10 +83,7 @@ namespace _0sechill.Controllers
                 issueDto.files = await fileService.getListPaths(issue.ID.ToString());
             }
 
-            return Ok(new GetAllIssueDto
-            {
-                listIssue = listIssueDto
-            });
+            return Ok(listIssueDto);
         }
 
         /// <summary>
