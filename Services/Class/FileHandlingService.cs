@@ -167,8 +167,8 @@ namespace _0sechill.Services.Class
         public async Task<List<string>> getListPaths(string ownerID)
         {
             return await context.filePaths
-                .Where(x => x.ID.Equals(Guid.Parse(ownerID)))
-                .Select(x => x.filePath)
+                .Where(x => x.ownerID.Equals(ownerID))
+                .Select(x => x.ID.ToString())
                 .ToListAsync();
         }
     }

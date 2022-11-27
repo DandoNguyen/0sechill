@@ -80,16 +80,10 @@ namespace _0sechill.Controllers
                     }
                 }
 
-                foreach (var filePath in issue.files)
-                {
-                    issueDto.files.Add(filePath.filePath);
-                }
+                issueDto.files = await fileService.getListPaths(issue.ID.ToString());
             }
 
-            return Ok(new GetAllIssueDto
-            {
-                listIssue = listIssueDto
-            });
+            return Ok(listIssueDto);
         }
 
         /// <summary>

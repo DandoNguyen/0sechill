@@ -118,7 +118,7 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <param name="dto">Param of filter</param>
         /// <returns>List of filtered User</returns>
-        [HttpGet, Route("SearchUser")]
+        [HttpPost, Route("SearchUser")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetByFilter(SearchFilterDto dto)
         {
