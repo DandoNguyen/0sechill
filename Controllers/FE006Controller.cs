@@ -63,6 +63,8 @@ namespace _0sechill.Controllers
         /// <param name="assignIssueID"></param>
         /// <param name="isConfirmed"></param>
         /// <returns></returns>
+        [HttpPost, Route("AdminConfirmResult")]
+        [Authorize(Roles = "admin, blockManager")]
         public async Task<IActionResult> AdminConfirmResult(string assignIssueID, bool isConfirmed)
         {
             var existAssignedIssue = await context.assignIssues
