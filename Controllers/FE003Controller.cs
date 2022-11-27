@@ -71,10 +71,13 @@ namespace _0sechill.Controllers
                     .Include(x => x.files)
                     .Where(x => x.ID.Equals(Guid.Parse(issueDto.ID)))
                     .FirstOrDefaultAsync();
-                
-                foreach (var cateLookUp in issue.listCateLookUp)
+
+                if (issue.listCateLookUp.Any())
                 {
-                    issueDto.listCategory.Add(cateLookUp.valueString);
+                    foreach (var cateLookUp in issue.listCateLookUp)
+                    {
+                        issueDto.listCategory.Add(cateLookUp.valueString);
+                    }
                 }
 
                 foreach (var filePath in issue.files)
