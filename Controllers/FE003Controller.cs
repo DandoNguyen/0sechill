@@ -28,6 +28,7 @@ namespace _0sechill.Controllers
         private readonly IFileHandlingService fileService;
         private readonly IConfiguration config;
         private readonly IMailService mailService;
+        private readonly string STATUS_LOOKUP_TYPE_CODE = "05";
         private readonly string NEW_LOOKUP_STATUS_CODE = "03";
         private readonly string NEW_STRING = "new";
 
@@ -115,11 +116,12 @@ namespace _0sechill.Controllers
 
             //handling content
             var statusNew = await context.lookUp
-                .Where(x => x.lookUpTypeCode.Equals(NEW_LOOKUP_STATUS_CODE))
+                .Where(x => x.lookUpTypeCode.Equals(STATUS_LOOKUP_TYPE_CODE))
+                .Where(x => x.index.Equals(NEW_LOOKUP_STATUS_CODE))
                 .Select(x => x.valueString).FirstOrDefaultAsync();
 
             var newIssue = new Issues();
-            newIssue.status = (statusNew is not null && statusNew.Trim().ToLower().Equals(NEW_STRING)) ? statusNew : string.Empty;
+            newIssue.status = (statusNew is not null && statusNew.Trim().ToLower().Equals(NEW_STRING)) ? statusNew : NEW_STRING;
             newIssue.content = dto.content;
             newIssue.isPrivate = dto.isPrivate;
             newIssue.author = user;
@@ -254,7 +256,7 @@ namespace _0sechill.Controllers
             }
 
             //handling status
-            issueDto.status = existIssue.statusLookUp.valueString;
+            issueDto.status = existIssue.status;
 
             return Ok(issueDto);
         }
@@ -264,13 +266,13 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <param name="statusID"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet, Route("GetAllIssueByStatus")]
         public async Task<IActionResult> GetAllIssuesByStatus([Required] string statusID)
         {
             var listIssues = await context.issues
                 .Include(x => x.statusLookUp)
                 .Include(x => x.listCateLookUp)
-                .Where(x => x.statusLookUp.Equals(Guid.Parse(statusID)))
+                .Where(x => x.statusLookUp.lookUpID.Equals(Guid.Parse(statusID)))
                 .ToListAsync();
 
             if (!listIssues.Any())
