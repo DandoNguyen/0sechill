@@ -5,6 +5,8 @@ namespace _0sechill.Dto.FE003.Request
     public class CreateIssueDto
     {
         [Required]
+        public string title { get; set; }
+        [Required]
         public string content { get; set; }
         [Required]
         public bool isPrivate { get; set; }
