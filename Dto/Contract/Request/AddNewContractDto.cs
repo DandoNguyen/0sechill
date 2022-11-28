@@ -6,10 +6,10 @@ namespace _0sechill.Dto.Contract.Request
     {
         public List<string> listApartmentID { get; set; }
         public string residentID { get; set; }
-        public DateOnly startDate { get; set; }
+        public DateTime startDate { get; set; }
         [Required]
-        public DateOnly endDate { get; set; }
+        public DateTime endDate { get; set; }
         [Required]
-        public DateOnly lastSignedDate { get; set; }
+        public DateTime lastSignedDate { get; set; }
     }
 }

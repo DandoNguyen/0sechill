@@ -7,11 +7,11 @@ namespace _0sechill.Models
         [Key]
         public Guid userHistoryId { get; set; }
         [Required]
-        public DateOnly startDate { get; set; }
+        public DateTime startDate { get; set; } = DateTime.MinValue;
         [Required]
-        public DateOnly endDate { get; set; }
+        public DateTime endDate { get; set; } = DateTime.MinValue;
         [Required]
-        public DateOnly lastSignedDate { get; set; } 
+        public DateTime lastSignedDate { get; set; } = DateTime.MinValue;
         [Required]
         public string status { get; set; }
 
@@ -32,7 +32,6 @@ namespace _0sechill.Models
         public UserHistory()
         {
             userHistoryId = Guid.NewGuid();
-            lastSignedDate = DateOnly.FromDateTime(new DateTime());
         }
     }
 }
