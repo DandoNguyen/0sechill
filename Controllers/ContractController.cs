@@ -75,10 +75,9 @@ namespace _0sechill.Controllers
         /// <param name="residentID"></param>
         /// <returns></returns>
         [HttpGet, Route("GetAllContractOfResident")]
-        public async Task<IActionResult> GetAllContractOfResident(string residentID)
+        public async Task<IActionResult> GetAllContractOfResident()
         {
             var listContract = await context.userHistories
-                .Where(x => x.userId.Equals(residentID))
                 .ToListAsync();
             return Ok(listContract);
         }
