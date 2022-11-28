@@ -196,7 +196,7 @@ namespace _0sechill.Controllers
 
             var listIssue = new List<Issues>();
             listIssue = await context.issues
-                .Where(x => x.status.Equals(statusNew)).ToListAsync();
+                .Where(x => x.status.Trim().ToLower().Equals(statusNew.valueString)).ToListAsync();
 
             var listIssueDto = new List<IssueDto>();
             if (listIssue.Any())
@@ -261,6 +261,7 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("GetMyIssues")]
+        [Authorize(Roles = "staffst, staffbt")]
         public async Task<IActionResult> GetAllIssue()
         {
             var loggedInUser = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
@@ -280,6 +281,11 @@ namespace _0sechill.Controllers
                 var issueDto = new IssueDto();
                 issueDto = mapper.Map<IssueDto>(issue);
                 listResult.Add(issueDto);
+            }
+
+            if (listAssigned.Any())
+            {
+                return Ok("No issued Assigned to you");
             }
 
             return Ok(listAssigned);
