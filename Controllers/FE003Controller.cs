@@ -122,6 +122,7 @@ namespace _0sechill.Controllers
 
             var newIssue = new Issues();
             newIssue.status = (statusNew is not null && statusNew.Trim().ToLower().Equals(NEW_STRING)) ? statusNew : NEW_STRING;
+            newIssue.title = dto.title;
             newIssue.content = dto.content;
             newIssue.isPrivate = dto.isPrivate;
             newIssue.author = user;

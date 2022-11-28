@@ -1,4 +1,6 @@
-﻿using _0sechill.Models;
+﻿using _0sechill.Data;
+using _0sechill.Models;
+using _0sechill.Models.Infrastructure;
 using _0sechill.Models.LookUpData;
 using OfficeOpenXml;
 using System.Linq;
@@ -7,11 +9,15 @@ namespace _0sechill.Services.Class
 {
     public class ExcelService : IExcelService
     {
+        private readonly string FACIL_KEYWORD = "FACIL";
+        private readonly string APARTMENT = "Floor/Room";
         private readonly IConfiguration config;
+        private readonly ApiDbContext context;
 
-        public ExcelService(IConfiguration config)
+        public ExcelService(IConfiguration config, ApiDbContext context)
         {
             this.config = config;
+            this.context = context;
         }
         public async Task<List<Block>> ImportBlock(IFormFile formFile)
         {
@@ -22,7 +28,7 @@ namespace _0sechill.Services.Class
                 var package = new ExcelPackage(stream);
 
                 //Count Worksheet (each worksheet is a name of a Block)
-                var blockList = ReadBlock(package);
+                var blockList = await ReadBlock(package);
                 return blockList;
             }
         }
@@ -40,7 +46,7 @@ namespace _0sechill.Services.Class
                     {
                         if (worksheet.Name.ToLower().Trim().Equals(blockName.ToLower().Trim()))
                         {
-                            var entryCell = GetCellAddress(package, worksheet.Name, "Floor/Room");
+                            var entryCell = GetCellAddress(package, worksheet.Name, APARTMENT);
                             for (int row = entryCell.Start.Row + 1; row <= worksheet.Dimension.End.Row; row++)
                             {
                                 for (int col = entryCell.Start.Column + 1; col <= worksheet.Dimension.End.Column; col++)
@@ -75,6 +81,27 @@ namespace _0sechill.Services.Class
             return listApartment;
         }
 
+        private async Task getPublicFacil(ExcelWorksheet worksheet)
+        {
+            var listNewFacil = new List<PublicFacility>();
+            for (int row = worksheet.Dimension.Start.Row + 1; row <= worksheet.Dimension.End.Row; row++)
+            {
+                for (int col = worksheet.Dimension.Start.Column + 1; col <= worksheet.Dimension.End.Column; col++)
+                {
+                    var newFacil = new PublicFacility();
+                    newFacil.ID = Guid.NewGuid();
+                    newFacil.typeFacil = worksheet.Cells[row, worksheet.Dimension.Start.Column + 1].Value.ToString().Trim().ToLower();
+                    if (string.IsNullOrEmpty(worksheet.Cells[row, col].Value.ToString()))
+                    {
+                        break;
+                    }
+                    newFacil.facilCode = worksheet.Cells[row, col].Value.ToString();
+                    listNewFacil.Add(newFacil);
+                }
+            }
+            await context.AddRangeAsync(listNewFacil);
+            await context.SaveChangesAsync();
+        }
         private Apartment GetApartmentDetail(Apartment apartment, string apartmentDetail, ExcelPackage package)
         {
             foreach (var worksheet in package.Workbook.Worksheets)
@@ -108,7 +135,7 @@ namespace _0sechill.Services.Class
             return apartment;
         }
 
-        private List<Block> ReadBlock(ExcelPackage package)
+        private async Task<List<Block>> ReadBlock(ExcelPackage package)
         {
             //Create a list of Block object 
             List<Block> blockList = new();
@@ -121,9 +148,14 @@ namespace _0sechill.Services.Class
                         var block = new Block();
                         if (worksheet.Name.Equals("RoomDetails"))
                             continue;
+                        if (worksheet.Name.ToUpper().Trim().Equals(FACIL_KEYWORD))
+                        {
+                            await getPublicFacil(worksheet);
+                            continue;
+                        }
                         block.blockName = worksheet.Name;
                         //find key word in cell
-                        var cellAddress = GetCellAddress(package, worksheet.Name, "Floor/Room");
+                        var cellAddress = GetCellAddress(package, worksheet.Name, APARTMENT);
 
                         if (cellAddress is null)
                         {

@@ -81,13 +81,6 @@ namespace _0sechill.Controllers
             resultDto result = new resultDto();
             try
             {
-                if (!dto.isStaff)
-                {
-                    if (dto.apartmentID is null)
-                    {
-                        return BadRequest("Apartment must not be empty");
-                    }
-                }
                 var newEmployee = mapper.Map<ApplicationUser>(dto);
                 var nameArray = dto.fullname.Split(" ");
                 newEmployee.lastName = nameArray[0];
