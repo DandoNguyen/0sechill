@@ -48,7 +48,39 @@ namespace _0sechill.Controllers
             this.mailService = mailService;
         }
 
-        
+        [HttpGet, Route("GetMyIssues")]
+        public async Task<IActionResult> getMyIssue()
+        {
+            var user = await userManager.FindByIdAsync(this.User.FindFirst("ID").Value);
+            var myIssue = await context.issues
+                .Include(x => x.author)
+                .Where(x => x.author.Equals(user))
+                .ToListAsync();
+
+            var listIssueDto = new List<IssueDto>();
+            listIssueDto = mapper.Map<List<IssueDto>>(myIssue);
+            foreach (var issueDto in listIssueDto)
+            {
+                var issue = await context.issues
+                    .Include(x => x.listCateLookUp)
+                    .Include(x => x.files)
+                    .Where(x => x.ID.Equals(Guid.Parse(issueDto.ID)))
+                    .FirstOrDefaultAsync();
+
+                if (issue.listCateLookUp.Any())
+                {
+                    foreach (var cateLookUp in issue.listCateLookUp)
+                    {
+                        issueDto.listCategory.Add(cateLookUp.valueString);
+                    }
+                }
+
+                issueDto.files = await fileService.getListPaths(issue.ID.ToString());
+            }
+
+            return Ok(listIssueDto);
+        }
+
         /// <summary>
         /// Get All Issues
         /// </summary>
