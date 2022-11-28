@@ -91,11 +91,12 @@ namespace _0sechill.Services.Class
                     var newFacil = new PublicFacility();
                     newFacil.ID = Guid.NewGuid();
                     newFacil.typeFacil = worksheet.Cells[row, worksheet.Dimension.Start.Column + 1].Value.ToString().Trim().ToLower();
-                    if (string.IsNullOrEmpty(worksheet.Cells[row, col].Value.ToString()))
+                    var cellValue = worksheet.Cells[row, col].Value;
+                    if (cellValue is null)
                     {
                         break;
                     }
-                    newFacil.facilCode = worksheet.Cells[row, col].Value.ToString();
+                    newFacil.facilCode = cellValue.ToString();
                     listNewFacil.Add(newFacil);
                 }
             }
