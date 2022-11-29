@@ -450,7 +450,7 @@ namespace _0sechill.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpGet, Route("FilterSearchIssues")]
+        [HttpPost, Route("FilterSearchIssues")]
         public async Task<IActionResult> SearchByFilter(SearchIssueFilterDto dto)
         {
             var searchQuery = context.issues.AsQueryable();

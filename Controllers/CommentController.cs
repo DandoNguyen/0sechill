@@ -45,14 +45,14 @@ namespace _0sechill.Controllers
         /// <param name="issueId"></param>
         /// <returns></returns>
         [HttpGet, Route("GetComment")]
-        public async Task<IActionResult> GetCommentOfIssue(getAllCommentDto dto)
+        public async Task<IActionResult> GetCommentOfIssue(string issueID)
         {
-            if (dto.issueID is null)
+            if (issueID is null)
             {
                 return BadRequest("Issue Id must not be null");
             }
 
-            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(dto.issueID)));
+            var existIssue = await context.issues.FirstOrDefaultAsync(x => x.ID.Equals(Guid.Parse(issueID)));
             if (existIssue is null)
             {
                 return BadRequest("Issue not found");
@@ -61,16 +61,13 @@ namespace _0sechill.Controllers
             var listComments = await context.comments
                 .Where(x => x.issueId.Equals(existIssue.ID))
                 .Where(x => x.isChild.Equals(false))
-                .Include(x => x.authorId)
                 .ToListAsync();
             var listCommentDto = new List<CommentDto>();
             foreach (var comment in listComments)
             {
                 var commentDto = mapper.Map<CommentDto>(comment);
-                commentDto.authorName = await context.ApplicationUser
-                    .Where(x => x.Id.Equals(comment.ID))
-                    .Select(x => x.UserName)
-                    .FirstOrDefaultAsync();
+                var user = await userManager.FindByIdAsync(comment.authorId);
+                commentDto.authorName = user.UserName;
                 commentDto.childComments = await CheckForChildCommentAsync(commentDto.ID.ToString(), comment.authorId.ToString());
                 listCommentDto.Add(commentDto);
             }
@@ -92,13 +89,13 @@ namespace _0sechill.Controllers
             var newComment = new Comments();
             if (dto.isChild)
             {
-                if (dto.parentId is null)
+                if (string.IsNullOrEmpty(dto.parent_ID))
                 {
                     return BadRequest("Reply Comment doesn't have parent comment Id");
                 }
                 newComment = mapper.Map<Comments>(dto);
                 newComment.authorId = author.Id;
-                newComment.parentId = Guid.Parse(dto.parentId);
+                newComment.parentId = Guid.Parse(dto.parent_ID);
             }
             else
             {
@@ -132,7 +129,7 @@ namespace _0sechill.Controllers
         [HttpPut, Route("EditComment")]
         public async Task<IActionResult> EditCommnetAsync(EditCommentDto dto)
         {
-            var existComment = await context.comments.FindAsync(dto.commentId);
+            var existComment = await context.comments.FindAsync(Guid.Parse(dto.commentId));
             if (existComment is null)
             {
                 return BadRequest("Comment not Found");

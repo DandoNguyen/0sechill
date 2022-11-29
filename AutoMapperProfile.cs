@@ -81,6 +81,7 @@ namespace _0sechill
 
             //CommentDto
             CreateMap<CreateCommentDto, Comments>();
+            CreateMap<Comments, CommentDto>();
         }
     }
 }
