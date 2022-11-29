@@ -2,7 +2,7 @@
 An API for Vinhomes Resident like web and mobile application using .NET 6
 
 ## Installation
-required [Dotnet 6 SDK 6.0.400] (https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.400-windows-x64-installer)
+required [Dotnet 6 SDK 6.0.400](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.400-windows-x64-installer)
 
 Clone master branch
 
