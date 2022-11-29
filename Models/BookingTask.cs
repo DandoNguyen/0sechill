@@ -17,7 +17,8 @@ namespace _0sechill.Models
 
         public BookingTask()
         {
-            ID = Guid.NewGuid();    
+            ID = Guid.NewGuid();
+            PublicFacility = new List<PublicFacility>();
         }
     }
 }
