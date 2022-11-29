@@ -60,6 +60,7 @@ namespace _0sechill.Controllers
         /// <param name="fileId"></param>
         /// <returns></returns>
         [HttpGet, Route("GetFile")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetFileAsync(string fileId)
         {
             var filePathString = await context.filePaths

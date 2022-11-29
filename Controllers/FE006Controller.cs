@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Security.Claims;
+using ResponseStaffFeedbackDto = _0sechill.Dto.FE006.Response.ResponseStaffFeedbackDto;
 
 namespace _0sechill.Controllers
 {
@@ -138,7 +139,7 @@ namespace _0sechill.Controllers
             var existAssignIssue = await context.assignIssues
                 .Include(x => x.Issue)
                 .Include(x => x.staff)
-                .Where(x => x.ID.Equals(Guid.Parse(dto.assignIssueID))).FirstOrDefaultAsync();
+                .Where(x => x.Issue.ID.Equals(Guid.Parse(dto.assignIssueID))).FirstOrDefaultAsync();
 
             if (!staff.Id.Equals(existAssignIssue.staff.Id))
             {
@@ -181,6 +182,42 @@ namespace _0sechill.Controllers
             return true;
         }
 
+        [HttpPut, Route("ChangePriority")]
+        public async Task<IActionResult> changePriority(string AssignIssueId, int priorityLevel)
+        {
+            var assignIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Where(x => x.ID.Equals(Guid.Parse(AssignIssueId))).FirstOrDefaultAsync();
+            if (assignIssue is null)
+            {
+                return BadRequest("Assign Issue not found");
+            }
+
+            assignIssue.Issue.priorityLevel = priorityLevel;
+            context.assignIssues.Update(assignIssue);
+            await context.SaveChangesAsync();
+            return Ok($"Issue {assignIssue.Issue.title} has been set to priority: {priorityLevel}");
+        }
+
+        [HttpGet, Route("GetStaffFeedback")]
+        public async Task<IActionResult> GetStaffFeedback(string issueId)
+        {
+            var assignIssue = await context.assignIssues
+                .Include(x => x.Issue)
+                .Where(x => x.Issue.ID.Equals(Guid.Parse(issueId)))
+                .FirstOrDefaultAsync();
+
+            if (assignIssue is null)
+            {
+                return BadRequest("Assign Issue not found");
+            }
+
+            var staffFeedbackDto = new ResponseStaffFeedbackDto();
+            staffFeedbackDto.staffFeedback = assignIssue.staffFeedback;
+            staffFeedbackDto.listFileID = await fileHandlingService.getListPaths(assignIssue.ID.ToString());
+            return Ok(staffFeedbackDto);
+        }
+
         /// <summary>
         /// this is the endpoints for manager and admin to get all new issue
         /// </summary>
@@ -189,14 +226,11 @@ namespace _0sechill.Controllers
         [HttpGet, Route("GetAllNewIssue")]
         public async Task<IActionResult> getAllNewIssue()
         {
-            var statusNew = await context.lookUp
-                .Where(x => x.lookUpTypeCode.Equals(STATUS_LOOKUP_CODE))
-                .Where(x => x.index.Equals(STATUS_NEW_LOOKUP_INDEX))
-                .FirstOrDefaultAsync();
-
             var listIssue = new List<Issues>();
             listIssue = await context.issues
-                .Where(x => x.status.Trim().ToLower().Equals(statusNew.valueString)).ToListAsync();
+                .Include(x => x.listCateLookUp)
+                .Include(x => x.author)
+                .ToListAsync();
 
             var listIssueDto = new List<IssueDto>();
             if (listIssue.Any())
@@ -205,6 +239,13 @@ namespace _0sechill.Controllers
                 {
                     var newIssueDto = new IssueDto();
                     newIssueDto = mapper.Map<IssueDto>(issue);
+                    newIssueDto.authorName = issue.author.UserName;
+
+                    foreach (var cate in issue.listCateLookUp)
+                    {
+                        newIssueDto.listCategory.Add(cate.valueString);
+                    }
+
                     listIssueDto.Add(newIssueDto);
                 }
             }
@@ -272,8 +313,10 @@ namespace _0sechill.Controllers
 
             var listAssigned = await context.assignIssues
                 .Include(x => x.Issue)
+                .Include(x => x.Issue.author)
                 .Where(x => x.staffId.Equals(loggedInUser.Id))
-                .Select(x => x.Issue).ToListAsync();
+                .Select(x => x.Issue)
+                .ToListAsync();
 
             var listResult = new List<IssueDto>();
             foreach (var issue in listAssigned)
@@ -283,12 +326,12 @@ namespace _0sechill.Controllers
                 listResult.Add(issueDto);
             }
 
-            if (listAssigned.Any())
+            if (!listResult.Any())
             {
                 return Ok("No issued Assigned to you");
             }
 
-            return Ok(listAssigned);
+            return Ok(listResult);
         }
 
         /// <summary>

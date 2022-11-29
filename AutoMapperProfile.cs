@@ -1,7 +1,10 @@
 ﻿using _0sechill.Dto.Apartment.Request;
 using _0sechill.Dto.Apartment.Response;
 using _0sechill.Dto.Block.Response;
+using _0sechill.Dto.Comments.Request;
+using _0sechill.Dto.Comments.Response;
 using _0sechill.Dto.Contract.Request;
+using _0sechill.Dto.Contract.Response;
 using _0sechill.Dto.FE001.Model;
 using _0sechill.Dto.FE001.Response;
 using _0sechill.Dto.FE002.Request;
@@ -54,6 +57,7 @@ namespace _0sechill
             CreateMap<AssignIssue, IssueStaffDto>()
                 .ForMember(dest => dest.AssignIssueID, opt => opt.MapFrom(src => src.ID.ToString()))
                 .ForMember(dest => dest.staffId, opt => opt.MapFrom(src => src.staff.Id));
+            CreateMap<ApplicationUser, IssueDto>();
 
             //Message
             CreateMap<Message, MessageResponseDto>().ForMember(x => x.username, opt => opt.MapFrom(x => x.User.UserName));
@@ -72,7 +76,11 @@ namespace _0sechill
 
             //Contract 
             CreateMap<AddNewContractDto, UserHistory>();
-                
+            CreateMap<UserHistory, ContractDto>()
+                .ForMember(X => X.ID, opt => opt.MapFrom(src => src.userHistoryId));
+
+            //CommentDto
+            CreateMap<CreateCommentDto, Comments>();
         }
     }
 }

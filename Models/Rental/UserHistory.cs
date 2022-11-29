@@ -12,7 +12,7 @@ namespace _0sechill.Models
         public DateTime endDate { get; set; } = DateTime.MinValue;
         [Required]
         public DateTime lastSignedDate { get; set; } = DateTime.MinValue;
-        [Required]
+        
         public string status { get; set; }
 
         //Timestamps
