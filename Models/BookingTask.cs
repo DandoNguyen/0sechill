@@ -13,12 +13,11 @@ namespace _0sechill.Models
         public virtual string userID { get; set; }
         public virtual ApplicationUser User { get; set; }
 
-        public ICollection<PublicFacility> PublicFacility { get; set; }
+        public virtual PublicFacility PublicFacility { get; set; }
 
         public BookingTask()
         {
             ID = Guid.NewGuid();
-            PublicFacility = new List<PublicFacility>();
         }
     }
 }
