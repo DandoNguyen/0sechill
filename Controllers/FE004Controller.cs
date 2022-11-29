@@ -83,11 +83,8 @@ namespace _0sechill.Controllers
                 bookingDto.UserName = await context.ApplicationUser
                     .Where(x => x.Id.Equals(this.User.FindFirst("ID").Value))
                     .Select(x => x.UserName).FirstOrDefaultAsync();
-                bookingDto.DateOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
-                foreach (var facil in bookingTask.PublicFacility)
-                {
-                    bookingDto.listFacil.Add(facil.typeFacil + " - " + facil.facilCode);
-                }
+                bookingDto.DateAndTimeOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
+                bookingDto.listFacil = bookingTask.PublicFacility.typeFacil + " - " + bookingTask.PublicFacility.facilCode;
 
                 listResult.Add(bookingDto);
             }
@@ -117,7 +114,7 @@ namespace _0sechill.Controllers
 
             var newBookingTask = new BookingTask();
             newBookingTask.isAvailable = false;
-            newBookingTask.PublicFacility.Add(facility);
+            newBookingTask.PublicFacility = facility;
             newBookingTask.userID = user.Id;
             newBookingTask.User = user;
             newBookingTask.DateOfBooking = DateOnly.FromDateTime(dateTimeOfBooking);
