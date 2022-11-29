@@ -57,7 +57,27 @@ namespace _0sechill.Controllers
             return Ok(listBookingDate);
         }
 
+        [HttpGet, Route("GetAllBooking")]
+        public async Task<IActionResult> GetAllBooking()
+        {
+            var listResult = new List<BookingTaskDto>();
+            var listBooking = await context.bookingTasks
+                .Include(x => x.PublicFacility)
+                .Include(x => x.User)
+                .ToListAsync();
 
+            foreach (var bookingTask in listBooking)
+            {
+                var bookingDto = new BookingTaskDto();
+                bookingDto = mapper.Map<BookingTaskDto>(bookingTask);
+                bookingDto.UserName = bookingTask.User.UserName;
+                bookingDto.DateAndTimeOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
+                bookingDto.listFacil.Add(bookingTask.PublicFacility.typeFacil + " - " + bookingTask.PublicFacility.facilCode);
+                listResult.Add(bookingDto);
+            }
+
+            return Ok(listResult);
+        }
 
         [HttpGet, Route("GetMyBooking")]
         public async Task<IActionResult> GetMyBookkingTask()
