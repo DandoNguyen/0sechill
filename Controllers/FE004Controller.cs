@@ -1,6 +1,7 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.FE004.Response;
 using _0sechill.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,18 @@ namespace _0sechill.Controllers
         private readonly ApiDbContext context;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly IMapper mapper;
 
         public FE004Controller(
             ApiDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IMapper mapper)
         {
             this.context = context;
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.mapper = mapper;
         }
 
         /// <summary>
@@ -53,24 +57,39 @@ namespace _0sechill.Controllers
             return Ok(listBookingDate);
         }
 
+
+
         [HttpGet, Route("GetMyBooking")]
         public async Task<IActionResult> GetMyBookkingTask()
         {
             var listResult = new List<BookingTaskDto>();
-            var listMyBooking = await context.bookingTasks
+
+            var listMyBooking = new List<BookingTask>();
+            listMyBooking = await context.bookingTasks
                 .Include(x => x.PublicFacility)
                 .Include(x => x.User)
                 .Where(x => x.userID.Equals(this.User.FindFirst("ID").Value))
                 .ToListAsync();
 
+            if (!listMyBooking.Any())
+            {
+                return Ok($"No Booking Task user id {this.User.FindFirst("ID").Value}");
+            }
+
             foreach (var bookingTask in listMyBooking)
             {
                 var bookingDto = new BookingTaskDto();
+                bookingDto = mapper.Map<BookingTaskDto>(bookingTask);
+                bookingDto.UserName = await context.ApplicationUser
+                    .Where(x => x.Id.Equals(this.User.FindFirst("ID").Value))
+                    .Select(x => x.UserName).FirstOrDefaultAsync();
                 bookingDto.DateOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
                 foreach (var facil in bookingTask.PublicFacility)
                 {
                     bookingDto.listFacil.Add(facil.typeFacil + " - " + facil.facilCode);
                 }
+
+                listResult.Add(bookingDto);
             }
 
             return Ok(listResult);
