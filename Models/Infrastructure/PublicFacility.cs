@@ -5,8 +5,5 @@
         public Guid ID { get; set; }
         public string typeFacil { get; set; }
         public string facilCode { get; set; }
-
-        //FK
-        public BookingTask BookingTask { get; set; }
     }
 }
