@@ -118,7 +118,8 @@ namespace _0sechill.Controllers
 
             return Ok(listIssueDto);
         }
-
+        
+        [HttpGet, Route("FilterByStatus")]
         public async Task<IActionResult> FilterByStatus(int statusCode)
         {
             var statusCodeString = statusCode.ToString("00");
@@ -153,12 +154,11 @@ namespace _0sechill.Controllers
         [HttpGet, Route("GetCommentCount")]
         public async Task<IActionResult> GetCount(string issueID)
         {
-            var issue = await context.issues
-                .Include(x => x.comments)
-                .Where(x => x.ID.Equals(Guid.Parse(issueID)))
-                .FirstOrDefaultAsync();
+            var comment = await context.comments
+                .Where(x => x.issueId.Equals(Guid.Parse(issueID)))
+                .ToListAsync();
 
-            return Ok(issue.comments.Count());
+            return Ok(comment.Count());
         }
 
         /// <summary>
