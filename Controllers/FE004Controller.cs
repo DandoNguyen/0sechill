@@ -1,4 +1,5 @@
 ﻿using _0sechill.Data;
+using _0sechill.Dto.FE004.Response;
 using _0sechill.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -52,6 +53,29 @@ namespace _0sechill.Controllers
             return Ok(listBookingDate);
         }
 
+        [HttpGet, Route("GetMyBooking")]
+        public async Task<IActionResult> GetMyBookkingTask()
+        {
+            var listResult = new List<BookingTaskDto>();
+            var listMyBooking = await context.bookingTasks
+                .Include(x => x.PublicFacility)
+                .Include(x => x.User)
+                .Where(x => x.userID.Equals(this.User.FindFirst("ID").Value))
+                .ToListAsync();
+
+            foreach (var bookingTask in listMyBooking)
+            {
+                var bookingDto = new BookingTaskDto();
+                bookingDto.DateOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
+                foreach (var facil in bookingTask.PublicFacility)
+                {
+                    bookingDto.listFacil.Add(facil.typeFacil + " - " + facil.facilCode);
+                }
+            }
+
+            return Ok(listResult);
+        }
+
         /// <summary>
         /// this is the method that create a new booking task
         /// </summary>
@@ -68,7 +92,7 @@ namespace _0sechill.Controllers
                 return Unauthorized();
             }
 
-            var facility = await context.publicFacilities.FindAsync(facilityID);
+            var facility = await context.publicFacilities.FindAsync(Guid.Parse(facilityID));
             if (facility is null)
                 return BadRequest("Facility Not Found!");
 
