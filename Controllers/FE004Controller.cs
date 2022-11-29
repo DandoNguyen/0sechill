@@ -100,9 +100,7 @@ namespace _0sechill.Controllers
             {
                 var bookingDto = new BookingTaskDto();
                 bookingDto = mapper.Map<BookingTaskDto>(bookingTask);
-                bookingDto.UserName = await context.ApplicationUser
-                    .Where(x => x.Id.Equals(this.User.FindFirst("ID").Value))
-                    .Select(x => x.UserName).FirstOrDefaultAsync();
+                bookingDto.UserName = bookingTask.User.UserName;
                 bookingDto.DateAndTimeOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
                 bookingDto.listFacil.Add(bookingTask.PublicFacility.typeFacil + " - " + bookingTask.PublicFacility.facilCode);
 
