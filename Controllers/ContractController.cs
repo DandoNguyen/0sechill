@@ -1,5 +1,6 @@
 ﻿using _0sechill.Data;
 using _0sechill.Dto.Contract.Request;
+using _0sechill.Dto.Contract.Response;
 using _0sechill.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,7 +48,7 @@ namespace _0sechill.Controllers
             {
                 var existApartment = new Apartment();
                 existApartment = await context.apartments
-                    .Where(x => x.apartmentId.Equals(ID))
+                    .Where(x => x.apartmentId.Equals(Guid.Parse(ID)))
                     .FirstOrDefaultAsync();
                 if (existApartment is not null)
                 {
@@ -78,8 +79,25 @@ namespace _0sechill.Controllers
         public async Task<IActionResult> GetAllContractOfResident()
         {
             var listContract = await context.userHistories
+                .Include(x => x.apartment)
+                .Include(x => x.applicationUser)
                 .ToListAsync();
-            return Ok(listContract);
+            var listContractDto = new List<ContractDto>();
+            foreach (var contract in listContract)
+            {
+                var contractDto = new ContractDto();
+                contractDto = mapper.Map<ContractDto>(contract);
+                contractDto.ownerID = contract.applicationUser.Id;
+                contractDto.UserName = contract.applicationUser.UserName;
+
+                foreach (var apartment in contract.apartment)
+                {
+                    contractDto.listApartmentID.Add(apartment.apartmentId.ToString());
+                }
+
+                listContractDto.Add(contractDto);
+            }
+            return Ok(listContractDto);
         }
     }
 }
