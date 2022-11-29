@@ -6,6 +6,6 @@
         public DateTime DateOfBooking { get; set; }
         public bool isAvailable { get; set; }
         public string UserName { get; set; }
-        public List<string> listFacil { get; set; }
+        public List<string> listFacil { get; set; } = new List<string>();
     }
 }

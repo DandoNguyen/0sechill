@@ -10,6 +10,7 @@ using _0sechill.Dto.FE001.Response;
 using _0sechill.Dto.FE002.Request;
 using _0sechill.Dto.FE003.Request;
 using _0sechill.Dto.FE003.Response;
+using _0sechill.Dto.FE004.Response;
 using _0sechill.Dto.FE006.Response;
 using _0sechill.Dto.UserDto.Request;
 using _0sechill.Dto.UserDto.Response;
@@ -52,6 +53,9 @@ namespace _0sechill
             CreateMap<Issues, IssueDto>()
                 .ForMember(dest => dest.ID, opt => opt.MapFrom(src => src.ID.ToString()))
                 .ForMember(dest => dest.authorName, opt => opt.MapFrom(src => src.author.lastName + src.author.firstName));
+
+            //FE004
+            CreateMap<BookingTask, BookingTaskDto>();
 
             //FE006
             CreateMap<AssignIssue, IssueStaffDto>()
