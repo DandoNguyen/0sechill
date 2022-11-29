@@ -84,7 +84,7 @@ namespace _0sechill.Controllers
                     .Where(x => x.Id.Equals(this.User.FindFirst("ID").Value))
                     .Select(x => x.UserName).FirstOrDefaultAsync();
                 bookingDto.DateAndTimeOfBooking = bookingTask.DateOfBooking.ToDateTime(bookingTask.TimeLevelOfBooking);
-                bookingDto.listFacil = bookingTask.PublicFacility.typeFacil + " - " + bookingTask.PublicFacility.facilCode;
+                bookingDto.listFacil.Add(bookingTask.PublicFacility.typeFacil + " - " + bookingTask.PublicFacility.facilCode);
 
                 listResult.Add(bookingDto);
             }
