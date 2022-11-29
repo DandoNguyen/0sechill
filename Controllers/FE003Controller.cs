@@ -119,6 +119,48 @@ namespace _0sechill.Controllers
             return Ok(listIssueDto);
         }
 
+        public async Task<IActionResult> FilterByStatus(int statusCode)
+        {
+            var statusCodeString = statusCode.ToString("00");
+            var status = await context.lookUp
+                .Where(x => x.lookUpTypeCode.Equals(STATUS_LOOKUP_TYPE_CODE))
+                .Where(x => x.index.Equals(statusCode)).Select(x => x.valueString)
+                .FirstOrDefaultAsync();
+
+            var listIssue = await context.issues
+                .Include(x => x.listCateLookUp)
+                .Include(x => x.files)
+                .Where(x => x.status.ToLower().Equals(status))
+                .ToListAsync();
+            var listIssueDto = new List<IssueDto>();
+            if (listIssue is not null)
+            {
+                foreach (var issue in listIssue)
+                {
+                    var newIssueDto = new IssueDto();
+                    newIssueDto = mapper.Map<IssueDto>(issue);
+                    foreach (var cate in issue.listCateLookUp)
+                    {
+                        newIssueDto.listCategory.Add(cate.valueString);
+                    }
+                    newIssueDto.files = await fileService.getListPaths(issue.ID.ToString());
+                }
+            }
+
+            return Ok(listIssueDto);
+        }
+
+        [HttpGet, Route("GetCommentCount")]
+        public async Task<IActionResult> GetCount(string issueID)
+        {
+            var issue = await context.issues
+                .Include(x => x.comments)
+                .Where(x => x.ID.Equals(Guid.Parse(issueID)))
+                .FirstOrDefaultAsync();
+
+            return Ok(issue.comments.Count());
+        }
+
         /// <summary>
         /// public endpoints for creating new Issue
         /// </summary>
