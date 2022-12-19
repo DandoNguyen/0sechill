@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
@@ -54,10 +55,11 @@ namespace _0sechill.Hubs
         /// <returns></returns>
         public override async Task<Task> OnDisconnectedAsync(Exception exception)
         {
-            var user = await userManager.FindByIdAsync(Context.UserIdentifier);
+            var user = await userManager.FindByIdAsync(Context.User.FindFirst("ID").Value);
             user.currentHubConnectionId = null;
             await userManager.UpdateAsync(user);
-                        
+            await context.SaveChangesAsync();
+
             return base.OnDisconnectedAsync(exception);
         }
 
@@ -136,10 +138,10 @@ namespace _0sechill.Hubs
         /// <param name="message"></param>
         /// <param name="Authorization"></param>
         /// <returns></returns>
-        [HubMethodName("SendMessageToUser")]
+        [HubMethodName("JoinRoom")]
         public async Task SendMessageToUser([Required] string receiverId, [Required] string message)
         {
-            var senderId = Context.UserIdentifier;
+            var senderId = Context.User.FindFirst("ID").Value;
 
             //Try find exist Room
             var existRoom = await FindExistRoomAsync(senderId, receiverId);
@@ -147,20 +149,36 @@ namespace _0sechill.Hubs
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, existRoom.ID.ToString());
                 await UpdateMessagesStatusAsync(existRoom.ID.ToString());
-                await SendMessageAsync(senderId, message, existRoom);
+                //await SendMessageAsync(senderId, message, existRoom);
             }
             //Create new Room when exist Room is null
             else
             {
                 var newRoom = new Room();
                 newRoom.isGroupChat = false;
+
+                var sender = await userManager.FindByIdAsync(senderId);
+                var receiver = await userManager.FindByIdAsync(receiverId);
+                newRoom.users.Add(sender);
+                newRoom.users.Add(receiver);
+
                 await context.chatRooms.AddAsync(newRoom);
                 await context.SaveChangesAsync();
 
                 await Groups.AddToGroupAsync(Context.ConnectionId, newRoom.ID.ToString());
                 await UpdateMessagesStatusAsync(newRoom.ID.ToString());
-                await SendMessageAsync(senderId, message, newRoom);
+                //await SendMessageAsync(senderId, message, newRoom);
             }
+        }
+
+        [HubMethodName("SendMessage")]
+        public async Task SendMessage(string receiverId, string message)
+        {
+            var userId = Context.User.FindFirst("ID").Value;
+            var user = await userManager.FindByIdAsync(userId);
+            var existRoom = await FindExistRoomAsync(userId, receiverId);
+            await RecordMessagesAsync(userId, message, existRoom);
+            await Clients.Group(existRoom.ID.ToString()).Chat(user.UserName, message, existRoom.ID.ToString(), "");
         }
 
         /// <summary>
@@ -289,11 +307,12 @@ namespace _0sechill.Hubs
                     else
                     {
                         var currentRoomName = string.Empty;
-                        foreach (var user in room.users)
-                        {
-                            currentRoomName = (!user.Id.Equals(Context.UserIdentifier)) ? user.UserName.ToString() : "Name Not found!";
-                        }
+                        //foreach (var user in room.users)
+                        //{
+                        //    currentRoomName = (!user.Id.Equals(Context.UserIdentifier)) ? user.UserName.ToString() : "Name Not found!";
+                        //}
                         await Clients.Group(room.ID.ToString()).Chat(username, message, room.ID.ToString(), roomName: currentRoomName);
+                        this.Dispose();
                     }
                 }
                 else

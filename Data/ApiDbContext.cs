@@ -22,15 +22,12 @@ namespace _0sechill.Data
                 .WithOne(b => b.blockManager)
                 .HasForeignKey<Block>(b => b.blockManagerId);
 
-            //modelBuilder.Entity<Issues>()
-            //    .HasOne(a => a.assignIssue)
-            //    .WithOne(b => b.Issue)
-            //    .HasForeignKey<AssignIssue>(b => b.issueId);
-
+            modelBuilder.Entity<UserRoom>().HasKey(ur => new { ur.userID, ur.roomID });
 
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<UserRoom> UserRooms { get; set; }
         public DbSet<Vote> votes { get; set; }
         public DbSet<BookingTask> bookingTasks { get; set; }
         public DbSet<PublicFacility> publicFacilities { get; set; }

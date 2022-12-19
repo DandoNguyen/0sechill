@@ -13,7 +13,7 @@ namespace _0sechill.Hubs.Model
         public bool isGroupChat { get; set; }
         public string roomName { get; set; }
         public string groupAdmin { get; set; }
-        public ICollection<ApplicationUser> users { get; set; }
-        public ICollection<Message> messages { get; set; }
+        public ICollection<ApplicationUser> users { get; set; } = new List<ApplicationUser>();
+        public ICollection<Message> messages { get; set; } = new List<Message>();
     }
 }
