@@ -1,5 +1,4 @@
 ﻿using _0sechill.Data;
-using _0sechill.Hubs.Dto;
 using _0sechill.Hubs.Interfaces;
 using _0sechill.Hubs.Model;
 using _0sechill.Models;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using MimeKit;
 using System.ComponentModel.DataAnnotations;
 
 namespace _0sechill.Hubs
@@ -171,6 +169,12 @@ namespace _0sechill.Hubs
             }
         }
 
+        /// <summary>
+        /// Represnt the method that trigger message sending action
+        /// </summary>
+        /// <param name="receiverId"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         [HubMethodName("SendMessage")]
         public async Task SendMessage(string receiverId, string message)
         {
@@ -178,7 +182,7 @@ namespace _0sechill.Hubs
             var user = await userManager.FindByIdAsync(userId);
             var existRoom = await FindExistRoomAsync(userId, receiverId);
             await RecordMessagesAsync(userId, message, existRoom);
-            await Clients.Group(existRoom.ID.ToString()).Chat(user.UserName, message, existRoom.ID.ToString(), "");
+            await Clients.Group(existRoom.ID.ToString()).Chat(user.UserName, message, existRoom.ID.ToString(), String.Empty);
         }
 
         /// <summary>

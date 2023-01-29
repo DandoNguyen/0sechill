@@ -43,10 +43,24 @@ namespace _0sechill.Hubs.Controller
         }
 
         /// <summary>
+        /// represent the method that get the lastest message of a room
+        /// </summary>
+        /// <param name="roomId">Id of the mentioned room</param>
+        /// <returns>message full text of the latest message</returns>
+        [HttpGet, Route("GetLatestMesage")]
+        public async Task<IActionResult> getLatestMessageOfRoom(string roomId)
+        {
+            var lastestMessage = await context.chatMessages
+                .Where(x => x.roomId.Equals(Guid.Parse(roomId)))
+                .OrderByDescending(x => x.createdDateTime)
+                .FirstOrDefaultAsync();
+            return Ok(lastestMessage.message);
+        }
+
+        /// <summary>
         /// represent the method getting all the chat rooms of a user
         /// </summary>
-        /// <param name="Authorization"></param>
-        /// <returns></returns>
+        /// <returns>List of Rooms of user</returns>
         [HttpGet, Route("GetAllMyRoomChat")]
         public async Task<IActionResult> GetAllMyRoomChatAsync()
         {
@@ -102,23 +116,32 @@ namespace _0sechill.Hubs.Controller
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost, Route("LoadOldMessage")]
-        public async Task<IActionResult> LoadOldMessageAsync(MessageRequestDto dto)
+        [HttpGet, Route("LoadOldMessage")]
+        public async Task<IActionResult> LoadOldMessageAsync(string roomId, DateTime SearchDate, bool isSearchByDate)
         {
-            var listMessage = await context.chatMessages
-                .Include(x => x.User)
-                .Where(x => x.roomId.Equals(Guid.Parse(dto.roomId)))
-                .Where(x => x.createdDateTime <= dto.SearchDate)
-                .OrderBy(x => x.createdDateTime).Take(10)
-                .ToListAsync();
+            var listMessage = context.chatMessages.Where(x => x.roomId.Equals(Guid.Parse(roomId))).AsQueryable();
 
-            if (listMessage.Count.Equals(0))
+            if (isSearchByDate)
+            {
+                listMessage = listMessage.Where(x => x.createdDateTime <= SearchDate);
+            }
+
+            var listResult = await listMessage.OrderBy(x => x.createdDateTime).Take(10).ToListAsync();
+
+            //var listMessage = await context.chatMessages
+            //    .Include(x => x.User)
+            //    .Where(x => x.roomId.Equals(Guid.Parse(roomId)))
+            //    .Where(x => x.createdDateTime <= SearchDate)
+            //    .OrderBy(x => x.createdDateTime).Take(10)
+            //    .ToListAsync();
+
+            if (listResult.Count.Equals(0))
             {
                 return NoContent();
             }
 
             var listMessageDto = new List<MessageResponseDto>();
-            foreach (var message in listMessage)
+            foreach (var message in listResult)
             {
                 var MessageDto = mapper.Map<MessageResponseDto>(message);
                 listMessageDto.Add(MessageDto);

@@ -35,7 +35,7 @@ namespace _0sechill.Controllers
         private readonly IFileHandlingService fileHandlingService;
         private readonly IConfiguration config;
         private readonly string STATUS_LOOKUP_CODE = "05";
-        private readonly string STATUS_NEW_LOOKUP_INDEX = "03";
+        //private readonly string STATUS_NEW_LOOKUP_INDEX = "03";
         private readonly string STATUS_PENDING_REVIEW_INDEX = "01";
         private readonly string STATUS_IN_PROGRESS_INDEX = "04";
         private readonly string STATUS_DONE_INDEX = "02";
