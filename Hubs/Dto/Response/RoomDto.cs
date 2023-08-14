@@ -4,6 +4,7 @@
     {
         public string roomId { get; set; }
         public string roomName { get; set; }
+        public string receiverId { get; set; }
         public bool isGroupChat { get; set; }
     }
 }
